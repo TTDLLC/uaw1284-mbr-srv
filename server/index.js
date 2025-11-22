@@ -80,7 +80,7 @@ async function start() {
     secret: config.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    name: 'template.sid',
+    name: 'uaw1284.sid',
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
@@ -131,7 +131,7 @@ async function start() {
   app.use(errorHandler);
 
   app.listen(config.PORT, () => {
-    logger.info({ port: config.PORT, env: config.NODE_ENV }, 'Template server listening');
+    logger.info({ port: config.PORT, env: config.NODE_ENV }, 'UAW Local 1284 membership server listening');
     if (!config.isProduction) {
       logger.debug('Running in DEVELOPMENT mode');
     }

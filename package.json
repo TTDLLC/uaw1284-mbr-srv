@@ -1,8 +1,8 @@
 {
-  "name": "template-server",
+  "name": "uaw1284-membership-server",
   "version": "0.1.0",
   "private": true,
-  "description": "Minimal Express + EJS client/server template based on SVLLC project",
+  "description": "Membership portal server for UAW Local 1284 built with Express + EJS",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
