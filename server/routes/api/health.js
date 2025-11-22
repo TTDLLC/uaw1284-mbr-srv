@@ -7,6 +7,7 @@ router.get('/', (req, res) => {
   const requestId = req.id || null;
   const startedAt = req.app.locals.startedAt || null;
   const redisStatus = req.app.locals.redisStatus || (config.isProduction ? 'unknown' : 'not-required');
+  const mongoStatus = req.app.locals.mongoStatus || 'unknown';
 
   res.json({
     ok: true,
@@ -18,6 +19,7 @@ router.get('/', (req, res) => {
     uptime: process.uptime(),
     startedAt,
     services: {
+      mongo: mongoStatus,
       redis: redisStatus
     }
   });

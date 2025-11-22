@@ -11,6 +11,7 @@ const pino = require('pino');
 const pinoHttp = require('pino-http');
 const { createClient } = require('redis');
 const RedisStore = require('connect-redis').default;
+const mongoose = require('mongoose');
 
 const config = require('./config');
 const { requestId, notFound, errorHandler } = require('./middleware');
@@ -26,10 +27,12 @@ async function start() {
   const logger = pino({ level: config.LOG_LEVEL });
   app.locals.logger = logger;
   app.locals.startedAt = new Date();
-  app.locals.redisStatus = config.isProduction ? 'connecting' : 'not-required';
+  const shouldUseRedis = Boolean(config.REDIS_URL);
+  app.locals.redisStatus = shouldUseRedis ? 'connecting' : 'not-required';
+  app.locals.mongoStatus = 'connecting';
 
   let redisClient = null;
-  if (config.isProduction) {
+  if (shouldUseRedis) {
     redisClient = createClient({ url: config.REDIS_URL });
     redisClient.on('error', (err) => logger.error({ err }, 'Redis client error'));
     try {
@@ -40,6 +43,25 @@ async function start() {
       logger.error({ err }, 'Failed to connect to Redis');
       throw err;
     }
+  }
+
+  try {
+    await mongoose.connect(config.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000
+    });
+    app.locals.mongoStatus = 'ready';
+    mongoose.connection.on('disconnected', () => {
+      app.locals.mongoStatus = 'disconnected';
+      logger.warn('MongoDB connection lost');
+    });
+    mongoose.connection.on('error', (err) => {
+      app.locals.mongoStatus = 'error';
+      logger.error({ err }, 'MongoDB connection error');
+    });
+  } catch (err) {
+    app.locals.mongoStatus = 'error';
+    logger.error({ err }, 'Failed to connect to MongoDB');
+    throw err;
   }
 
   app.use(requestId);
@@ -89,7 +111,7 @@ async function start() {
     }
   };
 
-  if (config.isProduction && redisClient) {
+  if (shouldUseRedis && redisClient) {
     sessionOptions.store = new RedisStore({
       client: redisClient,
       prefix: `${config.APP_NAME}:sess:`
