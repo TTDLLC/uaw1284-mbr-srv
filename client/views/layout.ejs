@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= typeof title !== 'undefined' ? title : 'Template' %></title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <nav class="nav">
+      <a href="/" class="brand">Template</a>
+      <a href="/about">About</a>
+      <a href="/api/health" target="_blank" rel="noopener">Health</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <%- body %>
+  </main>
+
+  <footer class="site-footer">Template Server • <%= new Date().getFullYear() %></footer>
+  <script src="/js/index.js" defer></script>
+</body>
+</html>
+
