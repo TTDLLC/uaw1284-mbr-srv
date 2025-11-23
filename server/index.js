@@ -10,7 +10,7 @@ const csrf = require('csurf');
 const pino = require('pino');
 const pinoHttp = require('pino-http');
 const { createClient } = require('redis');
-const RedisStore = require('connect-redis').default;
+const { RedisStore } = require('connect-redis');
 const mongoose = require('mongoose');
 
 const config = require('./config');
@@ -27,22 +27,18 @@ async function start() {
   const logger = pino({ level: config.LOG_LEVEL });
   app.locals.logger = logger;
   app.locals.startedAt = new Date();
-  const shouldUseRedis = Boolean(config.REDIS_URL);
-  app.locals.redisStatus = shouldUseRedis ? 'connecting' : 'not-required';
+  app.locals.redisStatus = 'connecting';
   app.locals.mongoStatus = 'connecting';
 
-  let redisClient = null;
-  if (shouldUseRedis) {
-    redisClient = createClient({ url: config.REDIS_URL });
-    redisClient.on('error', (err) => logger.error({ err }, 'Redis client error'));
-    try {
-      await redisClient.connect();
-      app.locals.redisStatus = 'ready';
-    } catch (err) {
-      app.locals.redisStatus = 'error';
-      logger.error({ err }, 'Failed to connect to Redis');
-      throw err;
-    }
+  const redisClient = createClient({ url: config.REDIS_URL });
+  redisClient.on('error', (err) => logger.error({ err }, 'Redis client error'));
+  try {
+    await redisClient.connect();
+    app.locals.redisStatus = 'ready';
+  } catch (err) {
+    app.locals.redisStatus = 'error';
+    logger.error({ err }, 'Failed to connect to Redis');
+    throw err;
   }
 
   try {
@@ -98,11 +94,17 @@ async function start() {
   });
   app.use(generalLimiter);
 
+  const sessionStore = new RedisStore({
+    client: redisClient,
+    prefix: `${config.APP_NAME}:sess:`
+  });
+
   const sessionOptions = {
     secret: config.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     name: 'uaw1284.sid',
+    store: sessionStore,
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
@@ -110,13 +112,6 @@ async function start() {
       maxAge: 24 * 60 * 60 * 1000
     }
   };
-
-  if (shouldUseRedis && redisClient) {
-    sessionOptions.store = new RedisStore({
-      client: redisClient,
-      prefix: `${config.APP_NAME}:sess:`
-    });
-  }
 
   app.use(session(sessionOptions));
 
