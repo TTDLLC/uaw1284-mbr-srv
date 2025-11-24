@@ -1,0 +1,15 @@
+<% layout('layout') %>
+<h1>About UAW Local 1284</h1>
+<p>UAW Local 1284 proudly represents workers with dedication to fairness, solidarity, and collective power.</p>
+
+<h2>Leadership</h2>
+<ul>
+  <% leadership.forEach((leader) => { %>
+    <li><strong><%= leader.name %></strong> – <%= leader.role %></li>
+  <% }) %>
+</ul>
+
+<h2>Contact</h2>
+<p><strong>Address:</strong> <%= contact.address %></p>
+<p><strong>Phone:</strong> <%= contact.phone %></p>
+<p><strong>Email:</strong> <%= contact.email %></p>

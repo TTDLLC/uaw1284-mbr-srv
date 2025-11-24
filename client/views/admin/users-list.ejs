@@ -1,0 +1,27 @@
+<% layout('admin/layout-admin') %>
+<h1>Admin Users</h1>
+<a href="/admin/users/new">New Admin User</a>
+<table>
+  <thead>
+    <tr><th>Username</th><th>Name</th><th>Email</th><th>Role</th><th>SMS</th><th>Active</th><th></th></tr>
+  </thead>
+  <tbody>
+    <% users.forEach((user) => { %>
+      <tr>
+        <td><%= user.username %></td>
+        <td><%= user.fullName || '' %></td>
+        <td><%= user.email || '' %></td>
+        <td><%= user.role %></td>
+        <td><%= user.canSendSms ? 'Yes' : 'No' %></td>
+        <td><%= user.isActive ? 'Yes' : 'No' %></td>
+        <td>
+          <a href="/admin/users/<%= user._id %>/edit">Edit</a>
+          <form action="/admin/users/<%= user._id %>/deactivate" method="post" style="display:inline;">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit"><%= user.isActive ? 'Deactivate' : 'Activate' %></button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>

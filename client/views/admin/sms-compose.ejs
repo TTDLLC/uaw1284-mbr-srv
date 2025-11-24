@@ -1,0 +1,54 @@
+<% layout('admin/layout-admin') %>
+<h1>Send SMS</h1>
+<% if (error) { %><p class="error"><%= error %></p><% } %>
+<% if (result) { %>
+  <div class="notice">Matched <%= result.matched %> members. Success: <%= result.success %>, Failed: <%= result.failed %>. Segment: <%= result.summary %></div>
+<% } %>
+<form method="post" action="/admin/sms/send">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div>
+    <label>Segment Type</label>
+    <select name="segmentType">
+      <option value="all-members">All Members</option>
+      <option value="filter">Filter</option>
+      <option value="sms-group">SMS Group</option>
+      <option value="tags">Tags</option>
+    </select>
+  </div>
+  <div>
+    <label>Status</label>
+    <select name="status">
+      <option value="">Any</option>
+      <% ['HBU','SBU','TRA','INPRO'].forEach(function(s){ %>
+        <option value="<%= s %>"><%= s %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div>
+    <label>Department Number</label>
+    <input type="text" name="departmentNumber">
+  </div>
+  <div>
+    <label>Seniority From</label>
+    <input type="date" name="seniorityFrom">
+    <label>To</label>
+    <input type="date" name="seniorityTo">
+  </div>
+  <div>
+    <label>SMS Group</label>
+    <select name="smsGroup">
+      <% groups.forEach((group) => { %>
+        <option value="<%= group %>"><%= group %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div>
+    <label>Tags (comma separated)</label>
+    <input type="text" name="tags">
+  </div>
+  <div>
+    <label>Message</label>
+    <textarea name="message" maxlength="480" required></textarea>
+  </div>
+  <button type="submit">Send</button>
+</form>

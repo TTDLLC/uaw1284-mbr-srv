@@ -9,6 +9,9 @@ const SESSION_SECRET = process.env.SESSION_SECRET || 'change-me';
 const REDIS_URL = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/uaw1284-membership';
 const LOG_LEVEL = process.env.LOG_LEVEL || (isProduction ? 'info' : 'debug');
+const TWILIO_FROM_NUMBER = process.env.TWILIO_FROM_NUMBER || null;
+const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || null;
+const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || null;
 
 if (isProduction && SESSION_SECRET === 'change-me') {
   throw new Error('SESSION_SECRET must be set in production.');
@@ -34,6 +37,9 @@ const config = {
   PORT,
   REDIS_URL,
   SESSION_SECRET,
+  TWILIO_ACCOUNT_SID,
+  TWILIO_AUTH_TOKEN,
+  TWILIO_FROM_NUMBER,
   isProduction,
   projectRoot: path.resolve(__dirname, '..', '..')
 };

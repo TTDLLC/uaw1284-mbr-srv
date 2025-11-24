@@ -1,0 +1,122 @@
+<% layout('admin/layout-admin') %>
+<h1><%= mode === 'create' ? 'New Member' : 'Edit Member' %></h1>
+<form method="post" action="<%= mode === 'create' ? '/admin/members' : '/admin/members/' + member._id %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div>
+    <label>First Name</label>
+    <input type="text" name="firstName" value="<%= member.firstName || '' %>" <%= role === 'steward' ? 'disabled' : '' %> required>
+  </div>
+  <div>
+    <label>Last Name</label>
+    <input type="text" name="lastName" value="<%= member.lastName || '' %>" <%= role === 'steward' ? 'disabled' : '' %> required>
+  </div>
+  <div>
+    <label>CID</label>
+    <input type="text" name="cid" value="<%= member.cid || '' %>" <%= role === 'steward' ? 'disabled' : '' %>>
+  </div>
+  <div>
+    <label>UID</label>
+    <input type="text" name="uid" value="<%= member.uid || '' %>" <%= role === 'steward' ? 'disabled' : '' %>>
+  </div>
+  <div>
+    <label>Email</label>
+    <input type="email" name="email" value="<%= member.email || '' %>" <%= role === 'steward' ? 'disabled' : '' %>>
+  </div>
+  <div>
+    <label>Phone</label>
+    <input type="text" name="phone" value="<%= member.phone || '' %>" <%= role === 'steward' ? 'disabled' : '' %>>
+  </div>
+  <div>
+    <label>Seniority Date</label>
+    <input type="date" name="seniorityDate" value="<%= member.seniorityDate ? member.seniorityDate.toISOString().substring(0,10) : '' %>" <%= role === 'steward' ? 'disabled' : '' %>>
+  </div>
+  <div>
+    <label>Status</label>
+    <select name="status">
+      <% ['HBU','SBU','TRA','INPRO'].forEach(function(status){ %>
+        <option value="<%= status %>" <%= member.status === status ? 'selected' : '' %>><%= status %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div>
+    <label>Department Number</label>
+    <input type="text" name="departmentNumber" value="<%= member.departmentNumber || '' %>">
+  </div>
+  <div>
+    <label>Department Name</label>
+    <input type="text" name="departmentName" value="<%= member.departmentName || '' %>">
+  </div>
+  <fieldset>
+    <legend>Address</legend>
+    <input type="text" name="address.street" placeholder="Street" value="<%= member.address ? member.address.street : '' %>" <%= role === 'steward' ? 'disabled' : '' %>>
+    <input type="text" name="address.city" placeholder="City" value="<%= member.address ? member.address.city : '' %>" <%= role === 'steward' ? 'disabled' : '' %>>
+    <input type="text" name="address.state" placeholder="State" value="<%= member.address ? member.address.state : '' %>" <%= role === 'steward' ? 'disabled' : '' %>>
+    <input type="text" name="address.zip" placeholder="Zip" value="<%= member.address ? member.address.zip : '' %>" <%= role === 'steward' ? 'disabled' : '' %>>
+  </fieldset>
+  <div>
+    <label>Tags (comma separated)</label>
+    <input type="text" name="tags" value="<%= (member.tags || []).join(', ') %>">
+  </div>
+  <div>
+    <label>SMS Groups (comma separated)</label>
+    <input type="text" name="smsGroups" value="<%= (member.smsGroups || []).join(', ') %>">
+  </div>
+  <div>
+    <label>Internal Notes</label>
+    <textarea name="internalNotes"><%= member.internalNotes || '' %></textarea>
+  </div>
+  <% if (role !== 'readonly') { %>
+    <button type="submit">Save</button>
+  <% } %>
+</form>
+
+<section>
+  <h2>Communication Log</h2>
+  <% if (communicationLog && communicationLog.length) { %>
+    <ul>
+      <% communicationLog.forEach((log) => { %>
+        <li>
+          <strong><%= new Date(log.timestamp).toLocaleString() %></strong>
+          – <%= log.channel %> / <%= log.direction %>
+          <% if (log.subject) { %><em><%= log.subject %></em><% } %>
+          <% if (log.message) { %><div><%= log.message %></div><% } %>
+          <% if (log.createdBy && createdByMap && createdByMap[log.createdBy]) { %>
+            <small>by <%= createdByMap[log.createdBy].fullName || createdByMap[log.createdBy].username %></small>
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p>No communication history.</p>
+  <% } %>
+</section>
+
+<% if (role !== 'readonly') { %>
+  <section>
+    <h3>Add Communication Log Entry</h3>
+    <form method="post" action="/admin/members/<%= member._id %>">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="firstName" value="<%= member.firstName || '' %>"> <!-- preserve values -->
+      <input type="hidden" name="lastName" value="<%= member.lastName || '' %>">
+      <input type="hidden" name="status" value="<%= member.status || '' %>">
+      <input type="hidden" name="departmentNumber" value="<%= member.departmentNumber || '' %>">
+      <input type="hidden" name="departmentName" value="<%= member.departmentName || '' %>">
+      <label>Channel</label>
+      <select name="logChannel">
+        <option value="sms">SMS</option>
+        <option value="email">Email</option>
+        <option value="call">Call</option>
+        <option value="in-person">In Person</option>
+        <option value="other" selected>Other</option>
+      </select>
+      <label>Direction</label>
+      <select name="logDirection">
+        <option value="outbound">Outbound</option>
+        <option value="inbound">Inbound</option>
+      </select>
+      <input type="text" name="logSubject" placeholder="Subject">
+      <textarea name="logMessage" placeholder="Notes"></textarea>
+      <button type="submit">Add Entry</button>
+    </form>
+  </section>
+<% } %>

@@ -1,0 +1,36 @@
+<% layout('admin/layout-admin') %>
+<h1><%= mode === 'create' ? 'New Admin User' : 'Edit Admin User' %></h1>
+<form method="post" action="<%= mode === 'create' ? '/admin/users' : '/admin/users/' + user._id %>">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div>
+    <label>Username</label>
+    <input type="text" name="username" value="<%= user.username || '' %>" <%= mode === 'edit' ? 'readonly' : '' %> required>
+  </div>
+  <div>
+    <label>Full Name</label>
+    <input type="text" name="fullName" value="<%= user.fullName || '' %>">
+  </div>
+  <div>
+    <label>Email</label>
+    <input type="email" name="email" value="<%= user.email || '' %>">
+  </div>
+  <div>
+    <label>Role</label>
+    <select name="role">
+      <% ['superadmin','admin','steward','readonly'].forEach(function(r){ %>
+        <option value="<%= r %>" <%= user.role === r ? 'selected' : '' %>><%= r %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div>
+    <label><input type="checkbox" name="canSendSms" value="true" <%= user.canSendSms ? 'checked' : '' %>> Can Send SMS</label>
+  </div>
+  <div>
+    <label><input type="checkbox" name="isActive" value="true" <%= (typeof user.isActive === 'undefined' ? true : user.isActive) ? 'checked' : '' %>> Active</label>
+  </div>
+  <div>
+    <label>Password</label>
+    <input type="password" name="password" placeholder="<%= mode === 'edit' ? 'Leave blank to keep current' : '' %>">
+  </div>
+  <button type="submit">Save</button>
+</form>

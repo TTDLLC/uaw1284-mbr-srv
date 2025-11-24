@@ -1,0 +1,29 @@
+<% layout('layout') %>
+<h1>News</h1>
+
+<% if (articles && articles.length) { %>
+  <ul>
+    <% articles.forEach((article) => { %>
+      <li>
+        <a href="/news/<%= article.slug %>"><%= article.title %></a>
+        <% if (article.publishedAt) { %>
+          <small><%= new Date(article.publishedAt).toLocaleDateString() %></small>
+        <% } %>
+        <% if (article.excerpt) { %>
+          <p><%= article.excerpt %></p>
+        <% } %>
+      </li>
+    <% }) %>
+  </ul>
+  <div class="pagination">
+    <% if (page > 1) { %>
+      <a href="/news?page=<%= page - 1 %>">Previous</a>
+    <% } %>
+    <span>Page <%= page %> of <%= totalPages %></span>
+    <% if (page < totalPages) { %>
+      <a href="/news?page=<%= page + 1 %>">Next</a>
+    <% } %>
+  </div>
+<% } else { %>
+  <p>No articles available.</p>
+<% } %>

@@ -1,0 +1,6 @@
+<% layout('layout') %>
+<h1><%= article.title %></h1>
+<% if (article.publishedAt) { %>
+  <p><small>Published <%= new Date(article.publishedAt).toLocaleDateString() %></small></p>
+<% } %>
+<div><%- article.body %></div>

@@ -1,0 +1,24 @@
+<% layout('admin/layout-admin') %>
+<h2>At a glance</h2>
+<ul>
+  <li>Total members: <%= totalMembers %></li>
+  <li>Active members: <%= activeMembers %></li>
+</ul>
+
+<section>
+  <h3>Recent SMS</h3>
+  <ul>
+    <% smsMessages.forEach((sms) => { %>
+      <li><%= sms.to %> – <%= sms.body %> (<%= sms.status %>)</li>
+    <% }) %>
+  </ul>
+</section>
+
+<section>
+  <h3>Recent News</h3>
+  <ul>
+    <% news.forEach((article) => { %>
+      <li><%= article.title %></li>
+    <% }) %>
+  </ul>
+</section>

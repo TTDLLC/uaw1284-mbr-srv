@@ -1,0 +1,48 @@
+<% layout('admin/layout-admin') %>
+<h1>Members</h1>
+<form method="get" action="/admin/members" class="filters">
+  <input type="text" name="name" placeholder="Name" value="<%= filters.name || '' %>">
+  <input type="text" name="cid" placeholder="CID" value="<%= filters.cid || '' %>">
+  <input type="text" name="uid" placeholder="UID" value="<%= filters.uid || '' %>">
+  <select name="status">
+    <option value="">Status</option>
+    <% ['HBU','SBU','TRA','INPRO'].forEach(function(status){ %>
+      <option value="<%= status %>" <%= filters.status === status ? 'selected' : '' %>><%= status %></option>
+    <% }) %>
+  </select>
+  <input type="text" name="departmentNumber" placeholder="Department" value="<%= filters.departmentNumber || '' %>">
+  <input type="text" name="smsGroup" placeholder="SMS Group" value="<%= filters.smsGroup || '' %>">
+  <input type="text" name="tag" placeholder="Tag" value="<%= filters.tag || '' %>">
+  <button type="submit">Search</button>
+</form>
+<a href="/admin/members/new">New Member</a>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th><th>CID</th><th>UID</th><th>Department</th><th>Status</th><th>Phone</th><th>SMS Groups</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <% members.forEach((member) => { %>
+      <tr>
+        <td><%= member.firstName %> <%= member.lastName %></td>
+        <td><%= member.cid || '' %></td>
+        <td><%= member.uid || '' %></td>
+        <td><%= member.departmentNumber || '' %> <%= member.departmentName || '' %></td>
+        <td><%= member.status %></td>
+        <td><%= member.phone || '' %></td>
+        <td><%= (member.smsGroups || []).join(', ') %></td>
+        <td><a href="/admin/members/<%= member._id %>">View/Edit</a></td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+<div class="pagination">
+  <% if (page > 1) { %>
+    <a href="?page=<%= page - 1 %>">Previous</a>
+  <% } %>
+  <span>Page <%= page %> of <%= totalPages %></span>
+  <% if (page < totalPages) { %>
+    <a href="?page=<%= page + 1 %>">Next</a>
+  <% } %>
+</div>

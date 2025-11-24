@@ -1,0 +1,22 @@
+<% layout('layout') %>
+<div class="admin-shell">
+  <header class="admin-header">
+    <h1>UAW 1284 Admin</h1>
+    <nav class="admin-nav">
+      <a href="/admin">Dashboard</a>
+      <a href="/admin/members">Members</a>
+      <a href="/admin/news">News</a>
+      <a href="/admin/sms">SMS</a>
+      <% if (session && session.user && session.user.role === 'superadmin') { %>
+        <a href="/admin/users">Admin Users</a>
+      <% } %>
+      <form action="/admin/logout" method="post" style="display:inline;">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit">Logout</button>
+      </form>
+    </nav>
+  </header>
+  <section class="admin-content">
+    <%- body %>
+  </section>
+</div>

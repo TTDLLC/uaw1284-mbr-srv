@@ -1,0 +1,27 @@
+<% layout('layout') %>
+<section class="hero">
+  <h1>UAW Local 1284</h1>
+  <p>Serving members with solidarity, support, and strong representation.</p>
+</section>
+
+<section>
+  <h2>Latest News</h2>
+  <% if (news && news.length) { %>
+    <ul>
+      <% news.forEach((article) => { %>
+        <li>
+          <a href="/news/<%= article.slug %>"><%= article.title %></a>
+          <% if (article.publishedAt) { %>
+            <small><%= new Date(article.publishedAt).toLocaleDateString() %></small>
+          <% } %>
+          <% if (article.excerpt) { %>
+            <p><%= article.excerpt %></p>
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
+    <a href="/news">View all news</a>
+  <% } else { %>
+    <p>No news articles published yet.</p>
+  <% } %>
+</section>

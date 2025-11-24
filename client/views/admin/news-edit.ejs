@@ -1,0 +1,29 @@
+<% layout('admin/layout-admin') %>
+<h1><%= mode === 'create' ? 'New Article' : 'Edit Article' %></h1>
+<form action="<%= mode === 'create' ? '/admin/news' : '/admin/news/' + article._id %>" method="post">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div>
+    <label>Title</label>
+    <input type="text" name="title" value="<%= article.title || '' %>" required>
+  </div>
+  <div>
+    <label>Slug</label>
+    <input type="text" name="slug" value="<%= article.slug || '' %>" placeholder="auto-from-title">
+  </div>
+  <div>
+    <label>Excerpt</label>
+    <textarea name="excerpt"><%= article.excerpt || '' %></textarea>
+  </div>
+  <div>
+    <label>Body</label>
+    <textarea name="body" required><%= article.body || '' %></textarea>
+  </div>
+  <div>
+    <label><input type="checkbox" name="published" value="true" <%= article.published ? 'checked' : '' %>> Published</label>
+  </div>
+  <div>
+    <label>Published At</label>
+    <input type="datetime-local" name="publishedAt" value="<%= article.publishedAt ? new Date(article.publishedAt).toISOString().slice(0,16) : '' %>">
+  </div>
+  <button type="submit">Save</button>
+</form>

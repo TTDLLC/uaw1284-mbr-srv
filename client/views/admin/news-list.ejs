@@ -1,0 +1,34 @@
+<% layout('admin/layout-admin') %>
+<h1>News Articles</h1>
+<a href="/admin/news/new">New Article</a>
+<table>
+  <thead>
+    <tr><th>Title</th><th>Slug</th><th>Published</th><th>Published At</th><th></th></tr>
+  </thead>
+  <tbody>
+    <% articles.forEach((article) => { %>
+      <tr>
+        <td><%= article.title %></td>
+        <td><%= article.slug %></td>
+        <td><%= article.published ? 'Yes' : 'No' %></td>
+        <td><%= article.publishedAt ? new Date(article.publishedAt).toLocaleDateString() : '' %></td>
+        <td>
+          <a href="/admin/news/<%= article._id %>/edit">Edit</a>
+          <form action="/admin/news/<%= article._id %>/delete" method="post" style="display:inline;">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+<div class="pagination">
+  <% if (page > 1) { %>
+    <a href="?page=<%= page - 1 %>">Previous</a>
+  <% } %>
+  <span>Page <%= page %> of <%= totalPages %></span>
+  <% if (page < totalPages) { %>
+    <a href="?page=<%= page + 1 %>">Next</a>
+  <% } %>
+</div>

@@ -8,6 +8,7 @@ router.get('/', (req, res) => {
   const startedAt = req.app.locals.startedAt || null;
   const redisStatus = req.app.locals.redisStatus || (config.isProduction ? 'unknown' : 'not-required');
   const mongoStatus = req.app.locals.mongoStatus || 'unknown';
+  const twilioConfigured = Boolean(config.TWILIO_ACCOUNT_SID && config.TWILIO_AUTH_TOKEN);
 
   res.json({
     ok: true,
@@ -20,7 +21,8 @@ router.get('/', (req, res) => {
     startedAt,
     services: {
       mongo: mongoStatus,
-      redis: redisStatus
+      redis: redisStatus,
+      twilioConfigured
     }
   });
 });

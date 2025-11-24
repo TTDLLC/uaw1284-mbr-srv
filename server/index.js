@@ -131,6 +131,7 @@ async function start() {
       res.locals.csrfToken = req.csrfToken();
     }
     res.locals.requestId = req.id;
+    res.locals.session = req.session;
     next();
   });
 
