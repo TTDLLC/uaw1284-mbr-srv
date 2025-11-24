@@ -9,9 +9,8 @@ const session = require('express-session');
 const csrf = require('csurf');
 const pino = require('pino');
 const pinoHttp = require('pino-http');
-const { createClient } = require('redis');
-const { RedisStore } = require('connect-redis');
 const mongoose = require('mongoose');
+const MongoStore = require('connect-mongo');
 
 const config = require('./config');
 const { requestId, notFound, errorHandler } = require('./middleware');
@@ -27,19 +26,7 @@ async function start() {
   const logger = pino({ level: config.LOG_LEVEL });
   app.locals.logger = logger;
   app.locals.startedAt = new Date();
-  app.locals.redisStatus = 'connecting';
   app.locals.mongoStatus = 'connecting';
-
-  const redisClient = createClient({ url: config.REDIS_URL });
-  redisClient.on('error', (err) => logger.error({ err }, 'Redis client error'));
-  try {
-    await redisClient.connect();
-    app.locals.redisStatus = 'ready';
-  } catch (err) {
-    app.locals.redisStatus = 'error';
-    logger.error({ err }, 'Failed to connect to Redis');
-    throw err;
-  }
 
   try {
     await mongoose.connect(config.MONGO_URI, {
@@ -94,9 +81,11 @@ async function start() {
   });
   app.use(generalLimiter);
 
-  const sessionStore = new RedisStore({
-    client: redisClient,
-    prefix: `${config.APP_NAME}:sess:`
+  const sessionStore = MongoStore.create({
+    mongoUrl: config.MONGO_URI,
+    collectionName: 'sessions',
+    ttl: 24 * 60 * 60,
+    autoRemove: 'native'
   });
 
   const sessionOptions = {
