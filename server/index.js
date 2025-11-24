@@ -81,11 +81,42 @@ async function start() {
   });
   app.use(generalLimiter);
 
+  const serializeSession = (sessionData) => {
+    const plainObject = {};
+    Object.keys(sessionData).forEach((key) => {
+      if (key === 'cookie') {
+        const cookieValue = sessionData.cookie;
+        plainObject.cookie = typeof cookieValue?.toJSON === 'function' ? cookieValue.toJSON() : cookieValue;
+      } else if (typeof sessionData[key] !== 'function') {
+        plainObject[key] = sessionData[key];
+      }
+    });
+    return plainObject;
+  };
+
+  const deserializeSession = (storedValue) => {
+    if (storedValue == null) {
+      return undefined;
+    }
+    if (typeof storedValue === 'string') {
+      try {
+        return JSON.parse(storedValue);
+      } catch (err) {
+        logger.warn({ err }, 'Unable to parse stored session JSON, dropping value');
+        return undefined;
+      }
+    }
+    return storedValue;
+  };
+
   const sessionStore = MongoStore.create({
-    mongoUrl: config.MONGO_URI,
+    client: mongoose.connection.getClient(),
     collectionName: 'sessions',
     ttl: 24 * 60 * 60,
-    autoRemove: 'native'
+    autoRemove: 'native',
+    stringify: false,
+    serialize: serializeSession,
+    unserialize: deserializeSession
   });
 
   const sessionOptions = {
