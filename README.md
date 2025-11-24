@@ -7,7 +7,7 @@ Features
 --------
 
 - Express 5 + Helmet with strict CSP, rate limiting, and CSRF protection
-- Session management backed by Redis in production (in-memory for local dev)
+- Session management backed by MongoDB in all environments
 - Structured logging with Pino and per-request correlation IDs
 - `/api/health` endpoint that reports environment, build version, and backing service status
 - Shared EJS layout with Local 1284 branding for member/admin views
@@ -42,16 +42,16 @@ Getting Started
 
    The server listens on http://localhost:3000 by default.
 
-Running MongoDB and Redis Locally
----------------------------------
+Running MongoDB Locally
+-----------------------
 
-The repository includes a `docker-compose.yml` that bootstraps MongoDB and Redis with persistent volumes:
+The repository includes a `docker-compose.yml` that bootstraps MongoDB with a persistent volume:
 
 ```sh
 docker compose up -d
 ```
 
-With the containers running, ensure your `.env` file points to them (examples provided in `.env.example`). The defaults use `mongodb://127.0.0.1:27017/uaw1284-membership` and `redis://localhost:6379`, which match the published ports from the compose stack.
+With the container running, ensure your `.env` file points to it (examples provided in `.env.example`). The default uses `mongodb://127.0.0.1:27017/uaw1284-membership`, which matches the published port from the compose stack.
 
 Configuration
 -------------
@@ -61,11 +61,10 @@ Configuration
 | `NODE_ENV`       | `development` (default) or `production`.                                    |
 | `PORT`           | Port to bind (defaults to `3000`).                                          |
 | `SESSION_SECRET` | Required in all environments; must be unique and strong in production.      |
-| `REDIS_URL`      | Required in production for Redis-backed sessions.                          |
 | `MONGO_URI`      | MongoDB connection string used by Mongoose.                                 |
 | `LOG_LEVEL`      | Optional Pino log level (`debug`, `info`, etc.).                            |
 
-When running behind a proxy/load balancer set `NODE_ENV=production` and provide `REDIS_URL` (e.g. `redis://localhost:6379`). The server automatically enables `trust proxy`, secure cookies, and HSTS in that mode.
+When running behind a proxy/load balancer set `NODE_ENV=production`. The server automatically enables `trust proxy`, secure cookies, and HSTS in that mode.
 
 Routes
 ------
@@ -79,4 +78,4 @@ Operational Notes
 
 - Pino logs include the `requestId` for correlating responses with server-side errors.
 - CSRF tokens are exposed as `csrfToken` in the EJS layout; include them in any future forms.
-- In production, verify Redis connectivity before deploys and monitor `/api/health` for readiness.
+- In production, ensure MongoDB is reachable (for both app data and sessions) and monitor `/api/health` for readiness.

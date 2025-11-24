@@ -9,8 +9,7 @@ const session = require('express-session');
 const csrf = require('csurf');
 const pino = require('pino');
 const pinoHttp = require('pino-http');
-const { createClient } = require('redis');
-const { RedisStore } = require('connect-redis');
+const MongoStore = require('connect-mongo');
 const mongoose = require('mongoose');
 
 const config = require('./config');
@@ -27,19 +26,8 @@ async function start() {
   const logger = pino({ level: config.LOG_LEVEL });
   app.locals.logger = logger;
   app.locals.startedAt = new Date();
-  app.locals.redisStatus = 'connecting';
   app.locals.mongoStatus = 'connecting';
-
-  const redisClient = createClient({ url: config.REDIS_URL });
-  redisClient.on('error', (err) => logger.error({ err }, 'Redis client error'));
-  try {
-    await redisClient.connect();
-    app.locals.redisStatus = 'ready';
-  } catch (err) {
-    app.locals.redisStatus = 'error';
-    logger.error({ err }, 'Failed to connect to Redis');
-    throw err;
-  }
+  app.locals.sessionStoreStatus = 'initializing';
 
   try {
     await mongoose.connect(config.MONGO_URI, {
@@ -57,6 +45,34 @@ async function start() {
   } catch (err) {
     app.locals.mongoStatus = 'error';
     logger.error({ err }, 'Failed to connect to MongoDB');
+    throw err;
+  }
+
+  let sessionStore;
+  try {
+    const client = mongoose.connection.getClient();
+    const dbName =
+      mongoose.connection.db?.databaseName ||
+      (() => {
+        try {
+          const uri = new URL(config.MONGO_URI);
+          return uri.pathname.replace(/^\//, '') || undefined;
+        } catch (_err) {
+          return undefined;
+        }
+      })();
+
+    sessionStore = MongoStore.create({
+      client,
+      dbName,
+      collectionName: 'sessions',
+      stringify: false,
+      ttl: 24 * 60 * 60
+    });
+    app.locals.sessionStoreStatus = 'ready';
+  } catch (err) {
+    app.locals.sessionStoreStatus = 'error';
+    logger.error({ err }, 'Failed to initialize Mongo-backed session store');
     throw err;
   }
 
@@ -93,11 +109,6 @@ async function start() {
     legacyHeaders: false,
   });
   app.use(generalLimiter);
-
-  const sessionStore = new RedisStore({
-    client: redisClient,
-    prefix: `${config.APP_NAME}:sess:`
-  });
 
   const sessionOptions = {
     secret: config.SESSION_SECRET,
