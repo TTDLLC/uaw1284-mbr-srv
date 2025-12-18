@@ -1,0 +1,47 @@
+<section>
+  <h1>Audit Log</h1>
+  <p>Showing the 50 most recent entries.</p>
+  <table class="audit-table">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>Action</th>
+        <th>Entity</th>
+        <th>Actor</th>
+        <th>IP</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (logs.length === 0) { %>
+        <tr>
+          <td colspan="6">No audit entries recorded yet.</td>
+        </tr>
+      <% } %>
+      <% logs.forEach((log) => { %>
+        <tr>
+          <td><%= new Date(log.createdAt).toLocaleString() %></td>
+          <td><code><%= log.action %></code></td>
+          <td><%= log.entityType %> / <%= log.entityId %></td>
+          <td>
+            <% if (log.actor && log.actor.email) { %>
+              <%= log.actor.email %> (<%= log.actor.role || 'n/a' %>)
+            <% } else { %>
+              System
+            <% } %>
+          </td>
+          <td><%= log.ipAddress || 'n/a' %></td>
+          <td>
+            <% if (log.metadata && log.metadata.notes) { %>
+              <%= log.metadata.notes %>
+            <% } else if (log.metadata) { %>
+              <pre><%= JSON.stringify(log.metadata, null, 2) %></pre>
+            <% } else { %>
+              &mdash;
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>

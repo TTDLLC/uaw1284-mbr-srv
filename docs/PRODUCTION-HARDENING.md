@@ -52,26 +52,26 @@ Use this as a working checklist — update it as items are completed.
 # Phase 3 – Data Model, Integrity & Auditing
 
 ## 6. Database Schema & Indexing
-- [ ] Create Mongoose models for:
-  - [ ] `User` (staff/admin accounts)
-  - [ ] `Member` (CID, UID, address, etc.)
-  - [ ] `AuditLog`
-- [ ] Add unique indexes (CID, UID, email)
-- [ ] Add supporting indexes for query patterns
-- [ ] Introduce database migration system
+- [x] Create Mongoose models for:
+  - [x] `User` (staff/admin accounts)
+  - [x] `Member` (CID, UID, address, etc.)
+  - [x] `AuditLog`
+- [x] Add unique indexes (CID, UID, email)
+- [x] Add supporting indexes for query patterns
+- [x] Introduce database migration system
 
 ## 7. Auditing
-- [ ] Create `AuditLog` model
-- [ ] Log create/update/delete actions for members
-- [ ] Log admin actions with timestamp, IP, before/after snapshots
-- [ ] Build UI for admins to review audit logs
-- [ ] Log CSV/data exports (who exported, what, when)
+- [x] Create `AuditLog` model
+- [x] Log create/update/delete actions for members
+- [x] Log admin actions with timestamp, IP, before/after snapshots
+- [x] Build UI for admins to review audit logs
+- [x] Log CSV/data exports (who exported, what, when)
 
 ## 8. Authorization
-- [ ] Add RBAC middleware (`requireRole`)
-- [ ] Define roles: `admin`, `staff`, `readOnly`, etc.
-- [ ] Guard admin routes with role checks
-- [ ] Reflect permissions in UI (hide tabs/menus)
+- [x] Add RBAC middleware (`requireRole`)
+- [x] Define roles: `admin`, `staff`, `readOnly`, etc.
+- [x] Guard admin routes with role checks
+- [x] Reflect permissions in UI (hide tabs/menus)
 
 ---
 

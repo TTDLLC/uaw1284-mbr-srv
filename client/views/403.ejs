@@ -1,0 +1,6 @@
+<section class="error error-403">
+  <h1><%= typeof title !== 'undefined' ? title : 'Access Denied' %></h1>
+  <p><%= typeof msg !== 'undefined' ? msg : 'You do not have permission to view this page.' %></p>
+  <p>Request ID: <code><%= requestId %></code></p>
+  <p><a href="/">Return to dashboard</a></p>
+</section>

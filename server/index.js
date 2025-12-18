@@ -8,6 +8,7 @@ const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
 
 const config = require('./config');
+require('./models');
 const { requestId, notFound, errorHandler } = require('./middleware');
 const limiters = require('./middleware/limiters');
 const { assertSessionCookieSecurity } = require('./middleware/session');
@@ -15,6 +16,7 @@ const { protectRoutes: csrfProtection, attachCsrfTokenToLocals } = require('./mi
 const baseLogger = require('./logger');
 const { initSentry } = require('./monitoring/sentry');
 const { metricsMiddleware, metricsHandler } = require('./metrics');
+const { attachCurrentUser } = require('./middleware/auth');
 
 async function start() {
   const app = express();
@@ -167,6 +169,7 @@ async function start() {
 
   assertSessionCookieSecurity(sessionOptions.cookie, { isProd: config.isProd });
   app.use(session(sessionOptions));
+  app.use(attachCurrentUser);
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
@@ -186,6 +189,7 @@ async function start() {
   app.get('/api/metrics', metricsHandler);
   app.use('/api/auth', require('./routes/api/auth'));
   app.use('/api/admin', require('./routes/api/admin'));
+  app.use('/api/members', require('./routes/api/members'));
 
   app.use(notFound);
   if (sentryHandlers?.errorHandler) {

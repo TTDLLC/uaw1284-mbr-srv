@@ -3,13 +3,25 @@ const DEMO_USERS = [
     id: 'demo-admin',
     email: 'admin@local1284.org',
     role: 'admin',
+    firstName: 'Ava',
+    lastName: 'Admin',
     passwordHash: '$2b$10$U2v6Q0Eb5WSntUeO5UPTH.BcM/3q6h0b62oyMse2AmV9lG.gdCDKu'
   },
   {
     id: 'demo-staff',
     email: 'staff@local1284.org',
     role: 'staff',
+    firstName: 'Sam',
+    lastName: 'Staff',
     passwordHash: '$2b$10$UTI7d5gFRWKhH/WlSPNgDu7RYrvc7ess6BpaGk2/hn9zuGlQfF49i'
+  },
+  {
+    id: 'demo-readonly',
+    email: 'viewer@local1284.org',
+    role: 'readOnly',
+    firstName: 'Riley',
+    lastName: 'Viewer',
+    passwordHash: '$2b$10$8mU5JX0OgeeX0PJAjYgxb./wgTeyWUoJRGcWAKU8qABjsFMCKF.3O'
   }
 ];
 

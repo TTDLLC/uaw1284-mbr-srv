@@ -34,7 +34,13 @@ Getting Started
    npm install
    ```
 
-3. Run the development server
+3. Run database migrations (creates required indexes)
+
+   ```sh
+   npm run migrate
+   ```
+
+4. Run the development server
 
    ```sh
    npm run dev
@@ -73,10 +79,25 @@ Routes
 
 - `GET /` — Membership portal landing page (EJS)
 - `GET /about` — Placeholder informational page (EJS)
+- `GET /admin/audit` — Admin UI listing the 50 most recent audit entries
 - `GET /api/health` — JSON healthcheck (combined status)
 - `GET /api/health/live` — Lightweight liveness probe
 - `GET /api/health/ready` — Readiness probe including Mongo status
 - `GET /api/metrics` — Prometheus-compatible metrics endpoint
+- `GET /api/auth/*` — Login/password-reset APIs (JSON)
+- `POST /api/admin/actions` — Example admin action endpoint
+- `GET|POST /api/members/*` — CRUD and export endpoints for roster records (with audit logging)
+
+Demo Accounts & Roles
+---------------------
+
+| Role | Email | Password | Capabilities |
+| --- | --- | --- | --- |
+| `admin` | `admin@local1284.org` | `ChangeMe123!` | Full access to admin actions, member CRUD/export, audit UI |
+| `staff` | `staff@local1284.org` | `Steward456!` | Member CRUD, view audit UI |
+| `readOnly` | `viewer@local1284.org` | `Viewer789!` | Read-only API access (no member mutations or admin routes) |
+
+Roles are enforced both at the API layer (`requireAuth` + `requireRole`) and in the UI header, which hides restricted links unless the current session grants access.
 
 Operational Notes
 -----------------
@@ -84,6 +105,8 @@ Operational Notes
 - Structured JSON logs include the `requestId`, HTTP metadata, and userId (when available); configure rotation/shipping via `docs/LOGGING.md`.
 - Health probes, metrics, and error monitoring are documented in `docs/MONITORING.md`.
 - CSRF tokens are exposed as `csrfToken` in the EJS layout; include them in any future forms.
+- Navigation automatically hides admin-only actions for users without the proper role.
 - Run `npm run check:csrf` after editing EJS templates to ensure every form includes CSRF markup.
 - Follow `docs/CSP-UPDATES.md` whenever the Content Security Policy needs to be adjusted.
 - Monitor `/api/health` for readiness and backing-service status.
+- Use `npm run migrate` before each deployment to apply schema/index migrations stored under `server/migrations/`.

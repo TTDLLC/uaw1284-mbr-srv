@@ -11,8 +11,22 @@
     <nav class="nav">
       <a href="/" class="brand">UAW Local 1284</a>
       <a href="/about">About</a>
+      <% if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'staff')) { %>
+        <a href="/admin/audit">Audit Log</a>
+      <% } %>
       <a href="/api/health" target="_blank" rel="noopener">Health</a>
     </nav>
+    <div class="auth-banner">
+      <% if (currentUser) { %>
+        <span class="signed-in">Signed in as <strong><%= currentUser.name || currentUser.email %></strong> (<%= currentUser.role %>)</span>
+        <form method="post" action="/api/auth/logout" class="logout-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit">Log out</button>
+        </form>
+      <% } else { %>
+        <span class="signed-out">Not signed in. Use API clients to authenticate.</span>
+      <% } %>
+    </div>
   </header>
 
   <main class="container">

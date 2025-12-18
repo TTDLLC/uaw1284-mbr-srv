@@ -6,6 +6,7 @@ const { validateBody } = require('../../middleware/validation');
 const { regenerateSessionId } = require('../../middleware/session');
 const { hashPassword, verifyPassword } = require('../../services/passwords');
 const demoUsers = require('../../services/demoUsers');
+const { logEvent } = require('../../services/auditTrail');
 
 const router = express.Router();
 
@@ -50,16 +51,40 @@ router.post('/login', limiters.login, validateBody(loginSchema), async (req, res
     const { email, password } = req.body;
     const user = await demoUsers.findByEmail(email);
     if (!user) {
+      await logEvent({
+        action: 'auth.login.failed',
+        entityType: 'user',
+        entityId: email,
+        metadata: { reason: 'user_not_found' },
+        ipAddress: req.ip
+      });
       return unauthorizedResponse(res, req.id);
     }
 
     const passwordValid = await verifyPassword(password, user.passwordHash);
     if (!passwordValid) {
+      await logEvent({
+        action: 'auth.login.failed',
+        entityType: 'user',
+        entityId: user.id,
+        actor: { id: user.id, email: user.email, role: user.role },
+        metadata: { reason: 'invalid_password' },
+        ipAddress: req.ip
+      });
       return unauthorizedResponse(res, req.id);
     }
 
     await regenerateSessionId(req);
-    req.session.user = { id: user.id, email: user.email, role: user.role };
+    const displayName = [user.firstName, user.lastName].filter(Boolean).join(' ') || null;
+    req.session.user = { id: user.id, email: user.email, role: user.role, name: displayName };
+
+    await logEvent({
+      action: 'auth.login.success',
+      entityType: 'user',
+      entityId: user.id,
+      actor: { id: user.id, email: user.email, role: user.role },
+      ipAddress: req.ip
+    });
 
     return res.json({
       ok: true,
@@ -79,11 +104,21 @@ router.post('/logout', (req, res, next) => {
   if (!req.session) {
     return res.json({ ok: true, requestId: req.id });
   }
-  req.session.destroy((err) => {
+  const actor = req.session.user;
+  req.session.destroy(async (err) => {
     if (err) {
       return next(err);
     }
     res.clearCookie('uaw1284.sid');
+    if (actor) {
+      await logEvent({
+        action: 'auth.logout',
+        entityType: 'user',
+        entityId: actor.id,
+        actor,
+        ipAddress: req.ip
+      });
+    }
     return res.json({ ok: true, requestId: req.id });
   });
 });
@@ -97,6 +132,14 @@ router.post(
     const user = await demoUsers.findByEmail(email);
     if (user) {
       passwordResetStore.set(user.email, { token: 'demo-token', requestedAt: Date.now() });
+      await logEvent({
+        action: 'auth.password_reset.requested',
+        entityType: 'user',
+        entityId: user.id,
+        actor: { id: user.id, email: user.email, role: user.role },
+        metadata: { token: 'demo-token' },
+        ipAddress: req.ip
+      });
     }
     return res.json({
       ok: true,
@@ -126,6 +169,15 @@ router.post(
 
       const newHash = await hashPassword(newPassword);
       passwordResetStore.set(email, { ...storedReset, completedAt: Date.now(), hash: newHash });
+
+      await logEvent({
+        action: 'auth.password_reset.completed',
+        entityType: 'user',
+        entityId: user.id,
+        actor: { id: user.id, email: user.email, role: user.role },
+        metadata: { token },
+        ipAddress: req.ip
+      });
 
       return res.json({
         ok: true,
