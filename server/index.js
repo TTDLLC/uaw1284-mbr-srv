@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 const path = require('path');
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
@@ -19,8 +17,8 @@ async function start() {
   const app = express();
 
   app.disable('x-powered-by');
-  if (config.isProduction) {
-    app.set('trust proxy', 1);
+  if (config.trustProxy !== false) {
+    app.set('trust proxy', config.trustProxy);
   }
 
   const logger = pino({ level: config.LOG_LEVEL });
@@ -64,18 +62,18 @@ async function start() {
         connectSrc: ["'self'"],
         frameSrc: ["'none'"],
         objectSrc: ["'none'"],
-        upgradeInsecureRequests: config.isProduction ? [] : null,
+        upgradeInsecureRequests: config.isProd ? [] : null,
       }
     },
     crossOriginEmbedderPolicy: false,
-    hsts: config.isProduction ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
+    hsts: config.isProd ? { maxAge: 31536000, includeSubDomains: true, preload: true } : false,
     noSniff: true,
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
   }));
 
   const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: config.isProduction ? 100 : 1000,
+    max: config.isProd ? 100 : 1000,
     standardHeaders: true,
     legacyHeaders: false,
   });
@@ -112,7 +110,7 @@ async function start() {
   const sessionStore = MongoStore.create({
     client: mongoose.connection.getClient(),
     collectionName: 'sessions',
-    ttl: 24 * 60 * 60,
+    ttl: config.TTL.sessionSeconds,
     autoRemove: 'native',
     stringify: false,
     serialize: serializeSession,
@@ -128,8 +126,8 @@ async function start() {
     cookie: {
       httpOnly: true,
       sameSite: 'lax',
-      secure: config.isProduction,
-      maxAge: 24 * 60 * 60 * 1000
+      secure: config.isProd,
+      maxAge: config.TTL.sessionMs
     }
   };
 
@@ -169,7 +167,7 @@ async function start() {
 
   app.listen(config.PORT, () => {
     logger.info({ port: config.PORT, env: config.NODE_ENV }, 'UAW Local 1284 membership server listening');
-    if (!config.isProduction) {
+    if (!config.isProd) {
       logger.debug('Running in DEVELOPMENT mode');
     }
   });

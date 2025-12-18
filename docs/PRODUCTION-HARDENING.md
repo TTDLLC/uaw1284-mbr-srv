@@ -10,11 +10,11 @@ Use this as a working checklist — update it as items are completed.
 # Phase 1 – Core Hardening & Configuration
 
 ## 1. Environment & Configuration
-- [ ] Enforce required environment variables in production (`MONGO_URI`, `SESSION_SECRET`, etc.)
-- [ ] Add helper that validates required variables at startup
-- [ ] Expand config with `isDev`, `isTest`, `isProd`, shared TTL constants
-- [ ] Ensure `.env.example` matches all required values
-- [ ] Add `app.set('trust proxy', 1)` when behind reverse proxy
+- [x] Enforce required environment variables in production (`MONGO_URI`, `SESSION_SECRET`, etc.)
+- [x] Add helper that validates required variables at startup
+- [x] Expand config with `isDev`, `isTest`, `isProd`, shared TTL constants
+- [x] Ensure `.env.example` matches all required values
+- [x] Add `app.set('trust proxy', 1)` when behind reverse proxy
 
 ## 2. HTTP Security & Middleware
 - [ ] Add per-route rate limits (login, password-reset, admin actions)
