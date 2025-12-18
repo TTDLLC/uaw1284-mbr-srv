@@ -128,3 +128,5 @@ Operational Notes
 - Follow `docs/CSP-UPDATES.md` whenever the Content Security Policy needs to be adjusted.
 - Monitor `/api/health` for readiness and backing-service status.
 - Use `npm run migrate` before each deployment to apply schema/index migrations stored under `server/migrations/`.
+- Follow `docs/BACKUP.md` for daily backups, incremental oplog capture, quarterly restore tests, and DR runbooks.
+- Review `docs/PRIVACY-COMPLIANCE.md` for retention schedules, data minimization guidance, encryption requirements, and deletion workflows.

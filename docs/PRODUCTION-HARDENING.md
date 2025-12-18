@@ -94,17 +94,17 @@ Use this as a working checklist — update it as items are completed.
 # Phase 5 – Backups, Privacy & Ops Policy
 
 ## 11. Backup & Restore Strategy
-- [ ] Daily MongoDB backups (full)
-- [ ] Incremental/oplog backups (if supported)
-- [ ] Quarterly restore verification in staging
-- [ ] Add Disaster Recovery Procedure document
+- [x] Daily MongoDB backups (full)
+- [x] Incremental/oplog backups (if supported)
+- [x] Quarterly restore verification in staging
+- [x] Add Disaster Recovery Procedure document
 
 ## 12. Privacy & Compliance
-- [ ] Create data retention schedule for member records
-- [ ] Apply data minimization principles
-- [ ] Ensure encrypted storage for Mongo (volume-level or DB-level)
-- [ ] Apply least-privilege DB accounts
-- [ ] Add deletion/anonymization workflow (if needed)
+- [x] Create data retention schedule for member records
+- [x] Apply data minimization principles
+- [x] Ensure encrypted storage for Mongo (volume-level or DB-level)
+- [x] Apply least-privilege DB accounts
+- [x] Add deletion/anonymization workflow (if needed)
 
 ---
 
