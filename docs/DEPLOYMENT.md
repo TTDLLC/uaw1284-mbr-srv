@@ -26,6 +26,7 @@ Use the accompanying `.dockerignore` to keep builds slim—local modules, git me
 - Sets the standard `X-Forwarded-*` headers required for `trust proxy`.
 - Proxies `/api/health/live` and `/api/health/ready` directly.
 - Uncomment the HTTPS redirect if TLS terminates at Nginx. Otherwise run Nginx with valid certificates (e.g., via Let’s Encrypt).
+- Enables gzip for CSS/JS/JSON payloads. Enable Brotli if your platform supports it.
 
 Example Docker Compose snippet:
 

@@ -138,6 +138,11 @@ const adminActionRateLimit = Object.freeze({
   max: parseNumberFromEnv(process.env.ADMIN_ACTION_RATE_LIMIT_MAX, isProd ? 20 : 100, { min: 5 })
 });
 
+const limits = Object.freeze({
+  jsonBody: process.env.JSON_BODY_LIMIT || '1mb',
+  urlencodedBody: process.env.URLENCODED_BODY_LIMIT || '1mb'
+});
+
 const normalizeLogDestination = (value) => {
   const normalized = String(value || 'stdout').toLowerCase();
   if (['stdout', 'file'].includes(normalized)) {
@@ -196,6 +201,7 @@ const config = {
   PORT,
   SESSION_SECRET,
   TTL,
+  limits,
   isDev,
   isProd,
   isProduction: isProd,

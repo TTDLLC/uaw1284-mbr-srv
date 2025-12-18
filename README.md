@@ -86,6 +86,12 @@ Additional security, monitoring, rate-limit, and logging toggles are documented 
 
 When running behind a proxy/load balancer set `NODE_ENV=production`. The server automatically enables `trust proxy`, secure cookies, and HSTS in that mode.
 
+Static Assets & Compression
+---------------------------
+
+- Cache-bust client assets by appending `?v=<APP_VERSION>` to CSS/JS links (already wired in `layout.ejs`).
+- Serve assets with long-lived cache headers via your CDN/proxy, and enable gzip/Brotli (see `deploy/nginx.conf`).
+
 Routes
 ------
 

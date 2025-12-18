@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= typeof title !== 'undefined' ? title : 'UAW Local 1284 Membership Portal' %></title>
-  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/style.css?v=<%= appVersion %>">
 </head>
 <body>
   <header class="site-header">
@@ -34,6 +34,6 @@
   </main>
 
   <footer class="site-footer">UAW 1284 Membership Server • <%= new Date().getFullYear() %></footer>
-  <script src="/js/index.js" defer></script>
+  <script src="/js/index.js?v=<%= appVersion %>" defer></script>
 </body>
 </html>

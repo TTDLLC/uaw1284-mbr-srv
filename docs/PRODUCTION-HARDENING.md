@@ -84,10 +84,10 @@ Use this as a working checklist — update it as items are completed.
 - [x] Use PM2 or systemd if not containerized
 
 ## 10. Performance & Resource Controls
-- [ ] Add request body size limits (`express.json({ limit: "1mb" })`)
-- [ ] Enable gzip/brotli via proxy
-- [ ] Cache static assets with hashed filenames
-- [ ] Tune Mongo connection pool size / timeouts
+- [x] Add request body size limits (`express.json({ limit: "1mb" })`)
+- [x] Enable gzip/brotli via proxy
+- [x] Cache static assets with hashed filenames
+- [x] Tune Mongo connection pool size / timeouts
 
 ---
 

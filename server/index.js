@@ -42,7 +42,9 @@ async function start() {
 
   try {
     await mongoose.connect(config.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000
+      serverSelectionTimeoutMS: 5000,
+      maxPoolSize: Number(process.env.MONGO_MAX_POOL_SIZE || 20),
+      socketTimeoutMS: Number(process.env.MONGO_SOCKET_TIMEOUT_MS || 20000)
     });
     app.locals.mongoStatus = 'ready';
     mongoose.connection.on('disconnected', () => {
@@ -171,10 +173,14 @@ async function start() {
   app.use(session(sessionOptions));
   app.use(attachCurrentUser);
 
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({ limit: config.limits.jsonBody }));
+  app.use(express.urlencoded({ extended: true, limit: config.limits.urlencodedBody }));
 
   app.use(csrfProtection);
+  app.use((req, res, next) => {
+    res.locals.appVersion = config.APP_VERSION;
+    next();
+  });
   app.use(attachCsrfTokenToLocals);
 
   app.set('view engine', 'ejs');
