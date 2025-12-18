@@ -64,6 +64,8 @@ Configuration
 | `MONGO_URI`      | MongoDB connection string used by Mongoose and the session store.           |
 | `LOG_LEVEL`      | Optional Pino log level (`debug`, `info`, etc.).                            |
 
+Additional security, rate-limit, and logging toggles are documented in `.env.example` and `docs/LOGGING.md`.
+
 When running behind a proxy/load balancer set `NODE_ENV=production`. The server automatically enables `trust proxy`, secure cookies, and HSTS in that mode.
 
 Routes
@@ -76,7 +78,7 @@ Routes
 Operational Notes
 -----------------
 
-- Pino logs include the `requestId` for correlating responses with server-side errors.
+- Structured JSON logs include the `requestId`, HTTP metadata, and userId (when available); configure rotation/shipping via `docs/LOGGING.md`.
 - CSRF tokens are exposed as `csrfToken` in the EJS layout; include them in any future forms.
 - Run `npm run check:csrf` after editing EJS templates to ensure every form includes CSRF markup.
 - Follow `docs/CSP-UPDATES.md` whenever the Content Security Policy needs to be adjusted.

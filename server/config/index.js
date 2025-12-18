@@ -138,6 +138,35 @@ const adminActionRateLimit = Object.freeze({
   max: parseNumberFromEnv(process.env.ADMIN_ACTION_RATE_LIMIT_MAX, isProd ? 20 : 100, { min: 5 })
 });
 
+const normalizeLogDestination = (value) => {
+  const normalized = String(value || 'stdout').toLowerCase();
+  if (['stdout', 'file'].includes(normalized)) {
+    return normalized;
+  }
+  return 'stdout';
+};
+
+const defaultLogRedactions = [
+  'req.headers.authorization',
+  'req.headers.cookie',
+  'req.body.password',
+  'req.body.newPassword',
+  'req.body.currentPassword',
+  'req.body.token',
+  'req.body.sessionToken'
+];
+
+const logging = Object.freeze({
+  destination: normalizeLogDestination(process.env.LOG_DESTINATION),
+  redactPaths: defaultLogRedactions,
+  file: Object.freeze({
+    directory: process.env.LOG_FILE_DIR || path.resolve(__dirname, '..', '..', 'logs'),
+    name: process.env.LOG_FILE_NAME || 'app.log',
+    rotationInterval: process.env.LOG_FILE_ROTATION || '1d',
+    maxFiles: parseNumberFromEnv(process.env.LOG_FILE_MAX_FILES, 14, { min: 1, max: 90 })
+  })
+});
+
 const APP_VERSION = pkg.version;
 const APP_NAME = pkg.name;
 
@@ -156,6 +185,7 @@ const config = {
   isTest,
   projectRoot: path.resolve(__dirname, '..', '..'),
   trustProxy,
+  logging,
   security: Object.freeze({
     bcryptCost,
     passwordPolicy,

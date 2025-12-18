@@ -34,10 +34,10 @@ Use this as a working checklist — update it as items are completed.
 # Phase 2 – Observability, Logging & Errors
 
 ## 4. Logging
-- [ ] Switch logger to structured JSON (pino recommended)
-- [ ] Ensure logs always include: `requestId`, method, URL, status, IP, userId (when available)
-- [ ] Sanitize logs (no passwords, tokens, secrets)
-- [ ] Implement log rotation or log shipping
+- [x] Switch logger to structured JSON (pino recommended)
+- [x] Ensure logs always include: `requestId`, method, URL, status, IP, userId (when available)
+- [x] Sanitize logs (no passwords, tokens, secrets)
+- [x] Implement log rotation or log shipping
 
 ## 5. Errors & Monitoring
 - [ ] Add `/api/health/live` (process OK)

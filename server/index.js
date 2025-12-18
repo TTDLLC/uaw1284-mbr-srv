@@ -3,7 +3,6 @@ const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
 const helmet = require('helmet');
 const session = require('express-session');
-const pino = require('pino');
 const pinoHttp = require('pino-http');
 const mongoose = require('mongoose');
 const MongoStore = require('connect-mongo');
@@ -13,6 +12,7 @@ const { requestId, notFound, errorHandler } = require('./middleware');
 const limiters = require('./middleware/limiters');
 const { assertSessionCookieSecurity } = require('./middleware/session');
 const { protectRoutes: csrfProtection, attachCsrfTokenToLocals } = require('./middleware/csrf');
+const baseLogger = require('./logger');
 
 async function start() {
   const app = express();
@@ -22,8 +22,9 @@ async function start() {
     app.set('trust proxy', config.trustProxy);
   }
 
-  const logger = pino({ level: config.LOG_LEVEL });
-  app.locals.logger = logger;
+  const logger = baseLogger.child({ component: 'server' });
+  const httpLogger = baseLogger.child({ component: 'http' });
+  app.locals.logger = baseLogger;
   app.locals.startedAt = new Date();
   app.locals.mongoStatus = 'connecting';
 
@@ -48,9 +49,36 @@ async function start() {
 
   app.use(requestId);
   app.use(pinoHttp({
-    logger,
+    logger: httpLogger,
     genReqId: (req) => req.id,
-    customProps: (req) => ({ requestId: req.id })
+    serializers: {
+      req(req) {
+        return {
+          id: req.id,
+          method: req.method,
+          url: req.originalUrl || req.url,
+          ip: req.ip,
+          userAgent: req.headers['user-agent']
+        };
+      },
+      res(res) {
+        return {
+          statusCode: res.statusCode
+        };
+      }
+    },
+    customProps: (req, res) => ({
+      requestId: req.id,
+      userId: req.session?.user?.id || null,
+      route: req.route?.path || null
+    }),
+    customSuccessMessage: (req, res) => `${req.method} ${req.originalUrl || req.url} completed with ${res.statusCode}`,
+    customErrorMessage: (req, res, err) => err?.message || `${req.method} ${req.originalUrl || req.url} errored`,
+    customLogLevel: (res, err) => {
+      if (err || res.statusCode >= 500) return 'error';
+      if (res.statusCode >= 400) return 'warn';
+      return 'info';
+    }
   }));
 
   app.use(helmet({
