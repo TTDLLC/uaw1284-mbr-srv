@@ -3,7 +3,8 @@ const csrf = require('csurf');
 const csrfProtection = csrf();
 
 const CSRF_SKIP_RULES = [
-  { method: 'GET', pattern: /^\/api\/health/ }
+  { method: 'GET', pattern: /^\/api\/health/ },
+  { method: 'GET', pattern: /^\/api\/metrics/ }
 ];
 
 const shouldSkipCsrf = (req) => CSRF_SKIP_RULES.some(({ method, pattern }) => {

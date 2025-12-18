@@ -167,6 +167,23 @@ const logging = Object.freeze({
   })
 });
 
+const sentryTracesSampleRateRaw = Number(process.env.SENTRY_TRACES_SAMPLE_RATE);
+const sentryTracesSampleRate = Number.isFinite(sentryTracesSampleRateRaw)
+  ? Math.min(Math.max(sentryTracesSampleRateRaw, 0), 1)
+  : 0;
+
+const monitoring = Object.freeze({
+  metrics: Object.freeze({
+    enabled: parseBoolFromEnv(process.env.METRICS_ENABLED, true)
+  }),
+  sentry: Object.freeze({
+    dsn: process.env.SENTRY_DSN || '',
+    environment: process.env.SENTRY_ENV || NODE_ENV,
+    tracesSampleRate: sentryTracesSampleRate,
+    enabled: Boolean(process.env.SENTRY_DSN && process.env.SENTRY_DSN.length > 0)
+  })
+});
+
 const APP_VERSION = pkg.version;
 const APP_NAME = pkg.name;
 
@@ -186,6 +203,7 @@ const config = {
   projectRoot: path.resolve(__dirname, '..', '..'),
   trustProxy,
   logging,
+  monitoring,
   security: Object.freeze({
     bcryptCost,
     passwordPolicy,

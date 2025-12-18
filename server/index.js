@@ -13,6 +13,8 @@ const limiters = require('./middleware/limiters');
 const { assertSessionCookieSecurity } = require('./middleware/session');
 const { protectRoutes: csrfProtection, attachCsrfTokenToLocals } = require('./middleware/csrf');
 const baseLogger = require('./logger');
+const { initSentry } = require('./monitoring/sentry');
+const { metricsMiddleware, metricsHandler } = require('./metrics');
 
 async function start() {
   const app = express();
@@ -27,6 +29,14 @@ async function start() {
   app.locals.logger = baseLogger;
   app.locals.startedAt = new Date();
   app.locals.mongoStatus = 'connecting';
+
+  const sentryHandlers = initSentry();
+  if (sentryHandlers?.requestHandler) {
+    app.use(sentryHandlers.requestHandler);
+    if (sentryHandlers.tracingHandler) {
+      app.use(sentryHandlers.tracingHandler);
+    }
+  }
 
   try {
     await mongoose.connect(config.MONGO_URI, {
@@ -48,6 +58,7 @@ async function start() {
   }
 
   app.use(requestId);
+  app.use(metricsMiddleware);
   app.use(pinoHttp({
     logger: httpLogger,
     genReqId: (req) => req.id,
@@ -172,10 +183,14 @@ async function start() {
 
   app.use('/', require('./routes/index'));
   app.use('/api/health', require('./routes/api/health'));
+  app.get('/api/metrics', metricsHandler);
   app.use('/api/auth', require('./routes/api/auth'));
   app.use('/api/admin', require('./routes/api/admin'));
 
   app.use(notFound);
+  if (sentryHandlers?.errorHandler) {
+    app.use(sentryHandlers.errorHandler);
+  }
   app.use(errorHandler);
 
   app.listen(config.PORT, () => {

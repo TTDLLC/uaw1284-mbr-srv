@@ -1,5 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 
+const { captureException } = require('../monitoring/sentry');
+
 function requestId(req, _res, next) {
   req.id = req.id || uuidv4();
   next();
@@ -20,6 +22,24 @@ function wantsJson(req) {
   return req.xhr || (req.get('accept') || '').includes('application/json');
 }
 
+function jsonErrorResponse(res, { status, requestId, code = null, message, errors = null }) {
+  const payload = {
+    ok: false,
+    error: {
+      code,
+      message,
+      status
+    },
+    requestId
+  };
+
+  if (errors && errors.length > 0) {
+    payload.errors = errors;
+  }
+
+  return res.status(status).json(payload);
+}
+
 function notFound(req, res, _next) {
   const requestId = req.id || uuidv4();
   req.id = requestId;
@@ -27,7 +47,12 @@ function notFound(req, res, _next) {
   logger.warn({ requestId, method: req.method, url: req.originalUrl }, 'Route not found');
 
   if (wantsJson(req)) {
-    return res.status(404).json({ ok: false, message: 'Not Found', requestId });
+    return jsonErrorResponse(res, {
+      status: 404,
+      requestId,
+      code: 'not_found',
+      message: 'Not Found'
+    });
   }
 
   return res
@@ -64,8 +89,31 @@ function errorHandler(err, req, res, _next) {
     publicMessage = err.message;
   }
 
+  if (typeof captureException === 'function' && status >= 500) {
+    captureException(err, (scope) => {
+      scope.setTag('requestId', requestId);
+      scope.setContext('request', {
+        method: req.method,
+        url: req.originalUrl || req.url,
+        headers: {
+          'user-agent': req.headers['user-agent']
+        }
+      });
+      const user = req.user || req.session?.user;
+      if (user) {
+        scope.setUser({ id: user.id, email: user.email });
+      }
+    });
+  }
+
   if (wantsJson(req)) {
-    return res.status(status).json({ ok: false, message: publicMessage, requestId });
+    return jsonErrorResponse(res, {
+      status,
+      requestId,
+      code: err.code || null,
+      message: publicMessage,
+      errors: err.details
+    });
   }
 
   return res.status(status).render('500', {

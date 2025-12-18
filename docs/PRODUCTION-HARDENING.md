@@ -40,12 +40,12 @@ Use this as a working checklist — update it as items are completed.
 - [x] Implement log rotation or log shipping
 
 ## 5. Errors & Monitoring
-- [ ] Add `/api/health/live` (process OK)
-- [ ] Add `/api/health/ready` (Mongo and others OK)
-- [ ] Add Prometheus-compatible metrics endpoint
-- [ ] Track latency, error counts, throughput
-- [ ] Integrate Sentry or Rollbar for error reporting
-- [ ] Standardize JSON error format for API endpoints
+- [x] Add `/api/health/live` (process OK)
+- [x] Add `/api/health/ready` (Mongo and others OK)
+- [x] Add Prometheus-compatible metrics endpoint
+- [x] Track latency, error counts, throughput
+- [x] Integrate Sentry or Rollbar for error reporting
+- [x] Standardize JSON error format for API endpoints
 
 ---
 
