@@ -78,10 +78,10 @@ Use this as a working checklist — update it as items are completed.
 # Phase 4 – Deployment, Scaling & Resilience
 
 ## 9. Docker & Deployment
-- [ ] Create production-ready Dockerfile (multi-stage, non-root)
-- [ ] Add `.dockerignore`
-- [ ] Add Nginx reverse proxy configuration (if applicable)
-- [ ] Use PM2 or systemd if not containerized
+- [x] Create production-ready Dockerfile (multi-stage, non-root)
+- [x] Add `.dockerignore`
+- [x] Add Nginx reverse proxy configuration (if applicable)
+- [x] Use PM2 or systemd if not containerized
 
 ## 10. Performance & Resource Controls
 - [ ] Add request body size limits (`express.json({ limit: "1mb" })`)

@@ -48,6 +48,18 @@ Getting Started
 
    The server listens on http://localhost:3000 by default.
 
+Docker Deployment
+-----------------
+
+Build and run the production image:
+
+```sh
+docker build -t uaw1284-membership .
+docker run --env-file .env.example -p 3000:3000 uaw1284-membership
+```
+
+Pair the app container with the sample Nginx proxy in `deploy/nginx.conf`, or follow `docs/DEPLOYMENT.md` for PM2/systemd instructions.
+
 Running MongoDB Locally
 -----------------------
 
