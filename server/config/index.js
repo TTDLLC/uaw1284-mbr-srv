@@ -5,6 +5,37 @@ const path = require('path');
 const pkg = require('../../package.json');
 const { REQUIRED_ENV_VARS, validateRequiredEnv } = require('./requiredEnv');
 
+const parseNumberFromEnv = (value, defaultValue, { min, max } = {}) => {
+  if (value === undefined || value === null || value === '') {
+    return defaultValue;
+  }
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    return defaultValue;
+  }
+  if (typeof min === 'number' && parsed < min) {
+    return min;
+  }
+  if (typeof max === 'number' && parsed > max) {
+    return max;
+  }
+  return parsed;
+};
+
+const parseBoolFromEnv = (value, defaultValue) => {
+  if (value === undefined || value === null || value === '') {
+    return defaultValue;
+  }
+  const normalized = String(value).trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) {
+    return true;
+  }
+  if (['0', 'false', 'no', 'off'].includes(normalized)) {
+    return false;
+  }
+  return defaultValue;
+};
+
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const isProd = NODE_ENV === 'production';
 const isDev = NODE_ENV === 'development';
@@ -67,6 +98,46 @@ const parseTrustProxy = (rawValue) => {
 
 const trustProxy = parseTrustProxy(process.env.TRUST_PROXY);
 
+const passwordPolicy = Object.freeze({
+  minLength: parseNumberFromEnv(process.env.PASSWORD_MIN_LENGTH, 12, { min: 8, max: 256 }),
+  maxLength: parseNumberFromEnv(process.env.PASSWORD_MAX_LENGTH, 128, { min: 32, max: 512 }),
+  requireLowercase: parseBoolFromEnv(process.env.PASSWORD_REQUIRE_LOWERCASE, true),
+  requireUppercase: parseBoolFromEnv(process.env.PASSWORD_REQUIRE_UPPERCASE, true),
+  requireDigits: parseBoolFromEnv(process.env.PASSWORD_REQUIRE_DIGITS, true),
+  requireSymbols: parseBoolFromEnv(process.env.PASSWORD_REQUIRE_SYMBOLS, true)
+});
+
+if (passwordPolicy.minLength > passwordPolicy.maxLength) {
+  throw new Error('PASSWORD_MIN_LENGTH must be less than PASSWORD_MAX_LENGTH');
+}
+
+const bcryptCost = parseNumberFromEnv(process.env.BCRYPT_COST, isProd ? 12 : 10, { min: 6, max: 15 });
+
+const rateLimitDefaults = {
+  windowMs: 15 * 60 * 1000,
+  max: isProd ? 100 : 1000
+};
+
+const generalRateLimit = Object.freeze({
+  windowMs: parseNumberFromEnv(process.env.RATE_LIMIT_WINDOW_MS, rateLimitDefaults.windowMs, { min: 60 * 1000 }),
+  max: parseNumberFromEnv(process.env.RATE_LIMIT_MAX, rateLimitDefaults.max, { min: 10 })
+});
+
+const loginRateLimit = Object.freeze({
+  windowMs: parseNumberFromEnv(process.env.LOGIN_RATE_LIMIT_WINDOW_MS, 15 * 60 * 1000, { min: 60 * 1000 }),
+  max: parseNumberFromEnv(process.env.LOGIN_RATE_LIMIT_MAX, isProd ? 5 : 25, { min: 3 })
+});
+
+const passwordResetRateLimit = Object.freeze({
+  windowMs: parseNumberFromEnv(process.env.PASSWORD_RESET_RATE_LIMIT_WINDOW_MS, 60 * 60 * 1000, { min: 5 * 60 * 1000 }),
+  max: parseNumberFromEnv(process.env.PASSWORD_RESET_RATE_LIMIT_MAX, isProd ? 3 : 10, { min: 1 })
+});
+
+const adminActionRateLimit = Object.freeze({
+  windowMs: parseNumberFromEnv(process.env.ADMIN_ACTION_RATE_LIMIT_WINDOW_MS, 10 * 60 * 1000, { min: 60 * 1000 }),
+  max: parseNumberFromEnv(process.env.ADMIN_ACTION_RATE_LIMIT_MAX, isProd ? 20 : 100, { min: 5 })
+});
+
 const APP_VERSION = pkg.version;
 const APP_NAME = pkg.name;
 
@@ -84,7 +155,17 @@ const config = {
   isProduction: isProd,
   isTest,
   projectRoot: path.resolve(__dirname, '..', '..'),
-  trustProxy
+  trustProxy,
+  security: Object.freeze({
+    bcryptCost,
+    passwordPolicy,
+    rateLimits: Object.freeze({
+      adminAction: adminActionRateLimit,
+      general: generalRateLimit,
+      login: loginRateLimit,
+      passwordReset: passwordResetRateLimit
+    })
+  })
 };
 
 module.exports = config;

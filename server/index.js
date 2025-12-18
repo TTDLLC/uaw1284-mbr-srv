@@ -2,7 +2,6 @@ const path = require('path');
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
 const helmet = require('helmet');
-const rateLimit = require('express-rate-limit');
 const session = require('express-session');
 const csrf = require('csurf');
 const pino = require('pino');
@@ -12,6 +11,8 @@ const MongoStore = require('connect-mongo');
 
 const config = require('./config');
 const { requestId, notFound, errorHandler } = require('./middleware');
+const limiters = require('./middleware/limiters');
+const { assertSessionCookieSecurity } = require('./middleware/session');
 
 async function start() {
   const app = express();
@@ -71,13 +72,7 @@ async function start() {
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
   }));
 
-  const generalLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: config.isProd ? 100 : 1000,
-    standardHeaders: true,
-    legacyHeaders: false,
-  });
-  app.use(generalLimiter);
+  app.use(limiters.general);
 
   const serializeSession = (sessionData) => {
     const plainObject = {};
@@ -131,6 +126,7 @@ async function start() {
     }
   };
 
+  assertSessionCookieSecurity(sessionOptions.cookie, { isProd: config.isProd });
   app.use(session(sessionOptions));
 
   app.use(express.json());
@@ -161,6 +157,8 @@ async function start() {
 
   app.use('/', require('./routes/index'));
   app.use('/api/health', require('./routes/api/health'));
+  app.use('/api/auth', require('./routes/api/auth'));
+  app.use('/api/admin', require('./routes/api/admin'));
 
   app.use(notFound);
   app.use(errorHandler);

@@ -17,12 +17,12 @@ Use this as a working checklist — update it as items are completed.
 - [x] Add `app.set('trust proxy', 1)` when behind reverse proxy
 
 ## 2. HTTP Security & Middleware
-- [ ] Add per-route rate limits (login, password-reset, admin actions)
-- [ ] Add schema validation using Zod/Joi/Yup for all request bodies
-- [ ] Implement password policies (min length, complexity)
-- [ ] Use bcrypt or argon2 for password hashing
-- [ ] Regenerate session ID after login (session fixation protection)
-- [ ] Validate secure cookie flags for production (`secure`, `httpOnly`, `sameSite`)
+- [x] Add per-route rate limits (login, password-reset, admin actions)
+- [x] Add schema validation using Zod/Joi/Yup for all request bodies
+- [x] Implement password policies (min length, complexity)
+- [x] Use bcrypt or argon2 for password hashing
+- [x] Regenerate session ID after login (session fixation protection)
+- [x] Validate secure cookie flags for production (`secure`, `httpOnly`, `sameSite`)
 
 ## 3. CSRF & CSP Hardening
 - [ ] Document update process for CSP changes
