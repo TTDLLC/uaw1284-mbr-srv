@@ -78,4 +78,6 @@ Operational Notes
 
 - Pino logs include the `requestId` for correlating responses with server-side errors.
 - CSRF tokens are exposed as `csrfToken` in the EJS layout; include them in any future forms.
+- Run `npm run check:csrf` after editing EJS templates to ensure every form includes CSRF markup.
+- Follow `docs/CSP-UPDATES.md` whenever the Content Security Policy needs to be adjusted.
 - Monitor `/api/health` for readiness and backing-service status.

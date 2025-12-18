@@ -9,6 +9,22 @@ const demoUsers = require('../../services/demoUsers');
 
 const router = express.Router();
 
+router.get('/csrf-token', (req, res) => {
+  if (typeof req.csrfToken !== 'function') {
+    return res.status(500).json({
+      ok: false,
+      message: 'CSRF token generation is unavailable.',
+      requestId: req.id
+    });
+  }
+
+  return res.json({
+    ok: true,
+    csrfToken: req.csrfToken(),
+    requestId: req.id
+  });
+});
+
 const loginSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1, 'Password is required.')

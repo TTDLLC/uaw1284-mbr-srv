@@ -3,7 +3,6 @@ const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
 const helmet = require('helmet');
 const session = require('express-session');
-const csrf = require('csurf');
 const pino = require('pino');
 const pinoHttp = require('pino-http');
 const mongoose = require('mongoose');
@@ -13,6 +12,7 @@ const config = require('./config');
 const { requestId, notFound, errorHandler } = require('./middleware');
 const limiters = require('./middleware/limiters');
 const { assertSessionCookieSecurity } = require('./middleware/session');
+const { protectRoutes: csrfProtection, attachCsrfTokenToLocals } = require('./middleware/csrf');
 
 async function start() {
   const app = express();
@@ -132,21 +132,8 @@ async function start() {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  const csrfProtection = csrf();
-  app.use((req, res, next) => {
-    if (req.path.startsWith('/api/')) {
-      return next();
-    }
-    return csrfProtection(req, res, next);
-  });
-
-  app.use((req, res, next) => {
-    if (typeof req.csrfToken === 'function') {
-      res.locals.csrfToken = req.csrfToken();
-    }
-    res.locals.requestId = req.id;
-    next();
-  });
+  app.use(csrfProtection);
+  app.use(attachCsrfTokenToLocals);
 
   app.set('view engine', 'ejs');
   app.use(expressLayouts);

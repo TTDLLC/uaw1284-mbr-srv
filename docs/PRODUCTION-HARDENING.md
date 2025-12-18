@@ -25,9 +25,9 @@ Use this as a working checklist — update it as items are completed.
 - [x] Validate secure cookie flags for production (`secure`, `httpOnly`, `sameSite`)
 
 ## 3. CSRF & CSP Hardening
-- [ ] Document update process for CSP changes
-- [ ] Review CSRF exemptions under `/api/*`
-- [ ] Add tests or checks ensuring EJS forms correctly use `csrfToken`
+- [x] Document update process for CSP changes
+- [x] Review CSRF exemptions under `/api/*`
+- [x] Add tests or checks ensuring EJS forms correctly use `csrfToken`
 
 ---
 
