@@ -1,7 +1,15 @@
 const roles = Object.freeze({
   admin: 'admin',
-  staff: 'staff',
-  readOnly: 'readOnly'
+  member: 'member',
+  readOnly: 'readOnly',
+  staff: 'staff'
+});
+
+const roleHierarchy = Object.freeze({
+  readOnly: 0,
+  member: 1,
+  staff: 2,
+  admin: 3
 });
 
 function wantsJson(req) {
@@ -25,15 +33,25 @@ function respondWithError(req, res, status, message) {
 
 function requireAuth(req, res, next) {
   const sessionUser = req.session?.user;
-  if (!sessionUser) {
+  const user = req.user || sessionUser;
+  if (!user) {
     return respondWithError(req, res, 401, 'Authentication required.');
   }
-  req.user = sessionUser;
+  req.user = user;
   return next();
 }
 
 function requireRole(requiredRoles) {
-  const allowedRoles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
+  const allowedRoles = Array.isArray(requiredRoles)
+    ? requiredRoles
+    : (() => {
+      const requiredRole = String(requiredRoles);
+      if (Object.prototype.hasOwnProperty.call(roleHierarchy, requiredRole)) {
+        const minRank = roleHierarchy[requiredRole];
+        return Object.keys(roleHierarchy).filter((role) => roleHierarchy[role] >= minRank);
+      }
+      return [requiredRole];
+    })();
   return (req, res, next) => {
     const user = req.user || req.session?.user;
     if (!user) {

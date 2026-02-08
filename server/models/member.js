@@ -34,6 +34,12 @@ const memberSchema = new mongoose.Schema({
     trim: true,
     index: true
   },
+  departmentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Department',
+    required: false,
+    index: true
+  },
   email: {
     type: String,
     trim: true,
@@ -41,9 +47,37 @@ const memberSchema = new mongoose.Schema({
     unique: true,
     sparse: true
   },
+  emailStatus: {
+    type: String,
+    enum: ['none', 'pendingApproval', 'approved'],
+    default: 'none'
+  },
+  emailApprovedByUserId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null
+  },
+  emailApprovedAt: {
+    type: Date,
+    default: null
+  },
   phone: {
     type: String,
-    trim: true
+    trim: true,
+    unique: true,
+    sparse: true
+  },
+  phoneVerified: {
+    type: Boolean,
+    default: false
+  },
+  phoneVerifiedAt: {
+    type: Date,
+    default: null
+  },
+  smsOptIn: {
+    type: Boolean,
+    default: false
   },
   address: {
     type: addressSchema,
@@ -51,7 +85,7 @@ const memberSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['active', 'retired', 'left', 'pending'],
+    enum: ['active', 'inactive', 'retired', 'left', 'pending'],
     default: 'active',
     index: true
   },

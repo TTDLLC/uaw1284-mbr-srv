@@ -1,6 +1,10 @@
 module.exports = {
-  User: require('./user'),
-  Member: require('./member'),
+  AuthToken: require('./authToken'),
   AuditLog: require('./auditLog'),
-  PasswordResetToken: require('./passwordResetToken')
+  Department: require('./department'),
+  EmailChangeRequest: require('./emailChangeRequest'),
+  Member: require('./member'),
+  PasswordResetToken: require('./passwordResetToken'),
+  PhoneVerification: require('./phoneVerification'),
+  User: require('./user')
 };

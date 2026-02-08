@@ -30,6 +30,14 @@ const limiters = {
     ...config.security.rateLimits.passwordReset,
     message: 'Too many password reset requests. Please wait before retrying.'
   }),
+  otpSend: buildLimiter({
+    ...config.security.rateLimits.passwordReset,
+    message: 'Too many verification code requests. Please wait before retrying.'
+  }),
+  otpConfirm: buildLimiter({
+    ...config.security.rateLimits.passwordReset,
+    message: 'Too many verification attempts. Please wait before retrying.'
+  }),
   adminAction: buildLimiter({
     ...config.security.rateLimits.adminAction,
     message: 'Rate limit exceeded for admin actions.'

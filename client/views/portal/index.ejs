@@ -1,0 +1,34 @@
+<section class="page-header">
+  <h1>Member Portal</h1>
+  <p>Welcome to the UAW Local 1284 member portal. Sprint A placeholders are listed below.</p>
+</section>
+
+<section class="dashboard">
+  <h2>Member Tools</h2>
+  <ul class="module-list">
+    <li>My Profile (placeholder)</li>
+    <li>Verify Phone (placeholder)</li>
+    <li>Request Email Access (placeholder)</li>
+  </ul>
+</section>
+
+<% if (user && (user.role === 'staff' || user.role === 'admin')) { %>
+  <section class="dashboard">
+    <h2>Staff Tools</h2>
+    <ul class="module-list">
+      <li>Member Directory (placeholder)</li>
+      <li>Email Requests (placeholder)</li>
+      <li>Send Notification (placeholder)</li>
+    </ul>
+  </section>
+<% } %>
+
+<% if (user && user.role === 'admin') { %>
+  <section class="dashboard">
+    <h2>Admin Tools</h2>
+    <ul class="module-list">
+      <li>Departments (placeholder)</li>
+      <li>User Management (placeholder)</li>
+    </ul>
+  </section>
+<% } %>

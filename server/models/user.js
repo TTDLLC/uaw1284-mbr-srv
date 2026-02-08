@@ -1,8 +1,14 @@
 const mongoose = require('mongoose');
 
-const roles = ['admin', 'staff', 'readOnly'];
+const roles = ['admin', 'staff', 'member', 'readOnly'];
 
 const userSchema = new mongoose.Schema({
+  memberId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Member',
+    unique: true,
+    sparse: true
+  },
   email: {
     type: String,
     required: true,
@@ -19,6 +25,10 @@ const userSchema = new mongoose.Schema({
     enum: roles,
     default: 'staff',
     index: true
+  },
+  isActive: {
+    type: Boolean,
+    default: true
   },
   firstName: {
     type: String,
