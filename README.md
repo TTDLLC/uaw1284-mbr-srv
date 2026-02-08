@@ -40,7 +40,18 @@ Getting Started
    npm run migrate
    ```
 
-4. Run the development server
+4. Bootstrap the first admin user
+
+   ```sh
+   npm run create-admin -- --email admin@uaw1284.org --name "UAW 1284 Admin" --password "StrongPass123!"
+   ```
+
+   Notes:
+   - Use `--force` to update an existing user or to create another admin when one already exists.
+   - Demo auth is disabled in production; use this CLI for the initial admin.
+   - The command requires a working `MONGO_URI` (see `.env.example`).
+
+5. Run the development server
 
    ```sh
    npm run dev

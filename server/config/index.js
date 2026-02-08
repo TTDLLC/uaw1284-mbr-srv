@@ -133,6 +133,12 @@ const passwordResetRateLimit = Object.freeze({
   max: parseNumberFromEnv(process.env.PASSWORD_RESET_RATE_LIMIT_MAX, isProd ? 3 : 10, { min: 1 })
 });
 
+const passwordResetTokenTtlMinutes = parseNumberFromEnv(
+  process.env.PASSWORD_RESET_TOKEN_TTL_MINUTES,
+  30,
+  { min: 1 }
+);
+
 const adminActionRateLimit = Object.freeze({
   windowMs: parseNumberFromEnv(process.env.ADMIN_ACTION_RATE_LIMIT_WINDOW_MS, 10 * 60 * 1000, { min: 60 * 1000 }),
   max: parseNumberFromEnv(process.env.ADMIN_ACTION_RATE_LIMIT_MAX, isProd ? 20 : 100, { min: 5 })
@@ -213,6 +219,7 @@ const config = {
   security: Object.freeze({
     bcryptCost,
     passwordPolicy,
+    passwordResetTokenTtlMinutes,
     rateLimits: Object.freeze({
       adminAction: adminActionRateLimit,
       general: generalRateLimit,

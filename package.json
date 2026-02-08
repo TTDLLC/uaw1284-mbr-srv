@@ -8,6 +8,7 @@
     "start": "node server/index.js",
     "dev": "nodemon server/index.js",
     "check:csrf": "node scripts/check-csrf-forms.js",
+    "create-admin": "node server/scripts/create-admin.js",
     "migrate": "node scripts/run-migrations.js"
   },
   "dependencies": {

@@ -1,3 +1,9 @@
+if (process.env.NODE_ENV === 'production') {
+  throw new Error('demoUsers is disabled in production. Use Mongo-backed User auth.');
+} else {
+  console.warn('demoUsers is enabled for development/testing only.');
+}
+
 const DEMO_USERS = [
   {
     id: 'demo-admin',
