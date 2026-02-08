@@ -33,6 +33,7 @@ const phoneVerificationSchema = new mongoose.Schema({
 });
 
 phoneVerificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+phoneVerificationSchema.index({ memberId: 1, phone: 1 }, { unique: true });
 
 module.exports = mongoose.models.PhoneVerification
   || mongoose.model('PhoneVerification', phoneVerificationSchema);

@@ -1,0 +1,29 @@
+<section class="page-header">
+  <h1>Verify Your Phone</h1>
+  <p>We sent a 6-digit code to <strong><%= maskedPhone %></strong>.</p>
+</section>
+
+<% if (errors && errors.length) { %>
+  <div class="notice error">
+    <ul>
+      <% errors.forEach(function(err) { %>
+        <li><%= err %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/register/phone/confirm" class="form-card">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>
+    Verification Code
+    <input type="text" name="code" required maxlength="6" pattern="\d{6}">
+  </label>
+
+  <button type="submit">Verify Phone</button>
+</form>
+
+<p class="helper-link">
+  Didn’t get a code? <a href="/register/phone">Resend code</a>
+</p>

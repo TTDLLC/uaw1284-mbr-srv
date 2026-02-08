@@ -1,0 +1,35 @@
+<section class="page-header">
+  <h1>Register Your Phone</h1>
+  <p>This is for text alerts only. Portal access requires email approval.</p>
+</section>
+
+<% if (errors && errors.length) { %>
+  <div class="notice error">
+    <ul>
+      <% errors.forEach(function(err) { %>
+        <li><%= err %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/register/phone/start" class="form-card">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>
+    CID
+    <input type="text" name="cid" value="<%= form.cid %>" required>
+  </label>
+
+  <label>
+    Last Name
+    <input type="text" name="lastName" value="<%= form.lastName %>" required>
+  </label>
+
+  <label>
+    Phone Number
+    <input type="tel" name="phone" value="<%= form.phone %>" required>
+  </label>
+
+  <button type="submit">Send Verification Code</button>
+</form>
