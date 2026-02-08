@@ -1,0 +1,35 @@
+<section class="page-header">
+  <h1>Request Email Access</h1>
+  <p>Request access to the member portal. Staff will review your request.</p>
+</section>
+
+<% if (errors && errors.length) { %>
+  <div class="notice error">
+    <ul>
+      <% errors.forEach(function(err) { %>
+        <li><%= err %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/request-email" class="form-card">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>
+    CID
+    <input type="text" name="cid" value="<%= form.cid %>" required>
+  </label>
+
+  <label>
+    Last Name
+    <input type="text" name="lastName" value="<%= form.lastName %>" required>
+  </label>
+
+  <label>
+    Email
+    <input type="email" name="email" value="<%= form.email %>" required>
+  </label>
+
+  <button type="submit">Submit Request</button>
+</form>

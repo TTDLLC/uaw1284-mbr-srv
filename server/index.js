@@ -191,8 +191,11 @@ async function start() {
   app.use(express.static(path.join(__dirname, '../client/public')));
 
   app.use('/', require('./routes/index'));
+  app.use('/', require('./routes/requestEmail'));
+  app.use('/', require('./routes/authMagic'));
   app.use('/register', require('./routes/registerPhone'));
   app.use('/portal', require('./routes/portal'));
+  app.use('/portal/staff', require('./routes/portalStaffEmailRequests'));
   app.use('/api/health', require('./routes/api/health'));
   app.get('/api/metrics', metricsHandler);
   app.use('/api/auth', require('./routes/api/auth'));

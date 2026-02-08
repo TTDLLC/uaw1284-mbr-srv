@@ -1,0 +1,25 @@
+<section class="page-header">
+  <h1>Magic Link Login</h1>
+  <p>Enter your approved email address to receive a sign-in link.</p>
+</section>
+
+<% if (errors && errors.length) { %>
+  <div class="notice error">
+    <ul>
+      <% errors.forEach(function(err) { %>
+        <li><%= err %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/login" class="form-card">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>
+    Email
+    <input type="email" name="email" value="<%= form.email %>" required>
+  </label>
+
+  <button type="submit">Send Magic Link</button>
+</form>

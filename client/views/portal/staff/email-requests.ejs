@@ -1,0 +1,47 @@
+<section class="page-header">
+  <h1>Email Access Requests</h1>
+  <p>Review pending member email access requests.</p>
+</section>
+
+<% if (!requests || requests.length === 0) { %>
+  <p>No email requests found.</p>
+<% } else { %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Member</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Requested</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% requests.forEach(function(request) { %>
+        <tr>
+          <td>
+            <strong><%= request.memberName %></strong><br>
+            CID: <%= request.cid %>
+          </td>
+          <td><%= request.requestedEmail %></td>
+          <td><%= request.statusLabel %></td>
+          <td><%= request.requestedAtFormatted %></td>
+          <td>
+            <% if (request.status === 'pending') { %>
+              <form method="post" action="/portal/staff/email-requests/<%= request.id %>/approve" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit">Approve</button>
+              </form>
+              <form method="post" action="/portal/staff/email-requests/<%= request.id %>/reject" class="inline-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit">Reject</button>
+              </form>
+            <% } else { %>
+              <span class="muted">Reviewed</span>
+            <% } %>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } %>

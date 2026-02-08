@@ -64,6 +64,22 @@ if (!MONGO_URI) {
 const PORT = Number(process.env.PORT) || 3000;
 const LOG_LEVEL = process.env.LOG_LEVEL || (isProd ? 'info' : 'debug');
 
+const normalizeAppUrl = (value) => {
+  if (!value) {
+    return null;
+  }
+  return String(value).trim().replace(/\/+$/, '');
+};
+
+const APP_URL = normalizeAppUrl(process.env.APP_URL);
+if (!APP_URL) {
+  const message = 'APP_URL must be configured to generate magic links.';
+  if (isProd) {
+    throw new Error(message);
+  }
+  console.error(message);
+}
+
 const DEFAULT_SESSION_TTL_SECONDS = 24 * 60 * 60;
 const rawSessionTtl = process.env.SESSION_TTL_SECONDS;
 const parsedSessionTtl = rawSessionTtl == null || rawSessionTtl.length === 0
@@ -201,6 +217,7 @@ const APP_NAME = pkg.name;
 const config = {
   APP_NAME,
   APP_VERSION,
+  APP_URL,
   LOG_LEVEL,
   MONGO_URI,
   NODE_ENV,
