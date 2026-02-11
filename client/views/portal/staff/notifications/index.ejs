@@ -1,0 +1,37 @@
+<section class="page-header">
+  <h1>Notifications</h1>
+  <p>Recent notification sends.</p>
+</section>
+
+<% if (!notifications || notifications.length === 0) { %>
+  <p>No notifications yet.</p>
+<% } else { %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Created</th>
+        <th>Channel</th>
+        <th>Audience</th>
+        <th>Status</th>
+        <th>Sent</th>
+        <th>Failed</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% notifications.forEach(function(notification) { %>
+        <tr>
+          <td>
+            <a href="/portal/staff/notifications/<%= notification.id %>"><%= notification.createdAtFormatted %></a>
+          </td>
+          <td><%= notification.channel %></td>
+          <td><%= notification.audienceType %></td>
+          <td><%= notification.status %></td>
+          <td><%= notification.sent %></td>
+          <td><%= notification.failed %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } %>
+
+<p><a href="/portal/staff/notifications/new">Compose new notification</a></p>

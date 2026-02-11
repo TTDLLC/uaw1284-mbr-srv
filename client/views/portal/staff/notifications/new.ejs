@@ -1,0 +1,56 @@
+<section class="page-header">
+  <h1>Compose Notification</h1>
+  <p>Send an email, SMS, or both to members.</p>
+</section>
+
+<% if (errors && errors.length) { %>
+  <div class="notice error">
+    <ul>
+      <% errors.forEach(function(err) { %>
+        <li><%= err %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/portal/staff/notifications" class="form-card">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>
+    Channel
+    <select name="channel" required>
+      <option value="email" <%= form.channel === 'email' ? 'selected' : '' %>>Email</option>
+      <option value="sms" <%= form.channel === 'sms' ? 'selected' : '' %>>SMS</option>
+      <option value="both" <%= form.channel === 'both' ? 'selected' : '' %>>Both</option>
+    </select>
+  </label>
+
+  <label>
+    Audience
+    <select name="audienceType" required>
+      <option value="all" <%= form.audienceType === 'all' ? 'selected' : '' %>>All Members</option>
+      <option value="departments" <%= form.audienceType === 'departments' ? 'selected' : '' %>>By Department</option>
+    </select>
+  </label>
+
+  <label>
+    Departments (if applicable)
+    <select name="departmentIds" multiple size="5">
+      <% departments.forEach(function(dept) { %>
+        <option value="<%= dept._id %>" <%= form.departmentIds.includes(String(dept._id)) ? 'selected' : '' %>><%= dept.name %></option>
+      <% }); %>
+    </select>
+  </label>
+
+  <label>
+    Subject (email only)
+    <input type="text" name="subject" value="<%= form.subject %>">
+  </label>
+
+  <label>
+    Message
+    <textarea name="body" rows="6" required><%= form.body %></textarea>
+  </label>
+
+  <button type="submit">Queue Notification</button>
+</form>

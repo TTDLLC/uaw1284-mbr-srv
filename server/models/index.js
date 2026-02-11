@@ -4,6 +4,8 @@ module.exports = {
   Department: require('./department'),
   EmailChangeRequest: require('./emailChangeRequest'),
   Member: require('./member'),
+  Notification: require('./notification'),
+  NotificationRecipient: require('./notificationRecipient'),
   PasswordResetToken: require('./passwordResetToken'),
   PhoneVerification: require('./phoneVerification'),
   User: require('./user')

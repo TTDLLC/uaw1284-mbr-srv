@@ -1,0 +1,56 @@
+<section class="page-header">
+  <h1>Notification Detail</h1>
+  <p>Status: <strong><%= notification.status %></strong></p>
+</section>
+
+<section class="summary">
+  <h2>Summary</h2>
+  <ul class="summary-list">
+    <li>Channel: <%= notification.channel %></li>
+    <li>Audience: <%= notification.audienceType %></li>
+    <li>Total targeted: <%= notification.totalTargeted || 0 %></li>
+    <li>Email eligible: <%= notification.emailEligible || 0 %></li>
+    <li>SMS eligible: <%= notification.smsEligible || 0 %></li>
+    <li>Sent: <%= notification.sent || 0 %></li>
+    <li>Failed: <%= notification.failed || 0 %></li>
+  </ul>
+</section>
+
+<section class="summary">
+  <h2>Message</h2>
+  <% if (notification.subject) { %>
+    <p><strong>Subject:</strong> <%= notification.subject %></p>
+  <% } %>
+  <p><strong>Body:</strong></p>
+  <pre><%= notification.body %></pre>
+</section>
+
+<section class="summary">
+  <h2>Recent Failures</h2>
+  <% if (!failures || failures.length === 0) { %>
+    <p>No failures recorded.</p>
+  <% } else { %>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th>Destination</th>
+          <th>Error</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% failures.forEach(function(failure) { %>
+          <tr>
+            <td><%= failure.channel %></td>
+            <td><%= failure.destination %></td>
+            <td><%= failure.error %></td>
+            <td><%= failure.createdAtFormatted %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<p><a href="/portal/staff/notifications">Back to notifications</a></p>

@@ -196,6 +196,7 @@ async function start() {
   app.use('/register', require('./routes/registerPhone'));
   app.use('/portal', require('./routes/portal'));
   app.use('/portal/staff', require('./routes/portalStaffEmailRequests'));
+  app.use('/portal/staff', require('./routes/portalStaffNotifications'));
   app.use('/api/health', require('./routes/api/health'));
   app.get('/api/metrics', metricsHandler);
   app.use('/api/auth', require('./routes/api/auth'));

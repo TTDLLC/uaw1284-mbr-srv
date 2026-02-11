@@ -69,6 +69,17 @@ const limiters = {
       });
     }
   }),
+  notificationCreate: buildLimiter({
+    windowMs: 10 * 60 * 1000,
+    max: 5,
+    message: 'Too many notification requests. Please wait a few minutes and try again.',
+    onLimit: (req, res, message) => {
+      if (req.session) {
+        req.session.notificationLimiterMessage = message;
+      }
+      return res.redirect('/portal/staff/notifications/new');
+    }
+  }),
   adminAction: buildLimiter({
     ...config.security.rateLimits.adminAction,
     message: 'Rate limit exceeded for admin actions.'
