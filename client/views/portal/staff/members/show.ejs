@@ -1,0 +1,74 @@
+<section class="page-header">
+  <h1>Member Detail</h1>
+</section>
+
+<% if (success) { %>
+  <div class="notice success"><%= success %></div>
+<% } %>
+
+<% if (errors && errors.length) { %>
+  <div class="notice error">
+    <ul>
+      <% errors.forEach(function(err) { %>
+        <li><%= err %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/portal/staff/members/<%= member._id %>" class="form-card">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>
+    CID (read-only)
+    <input type="text" value="<%= member.cid %>" disabled>
+  </label>
+
+  <label>
+    First Name
+    <input type="text" name="firstName" value="<%= member.firstName %>" required>
+  </label>
+
+  <label>
+    Last Name
+    <input type="text" name="lastName" value="<%= member.lastName %>" required>
+  </label>
+
+  <label>
+    Department
+    <select name="departmentId" required>
+      <option value="">Select department</option>
+      <% departments.forEach(function(dept) { %>
+        <option value="<%= dept._id %>" <%= String(member.departmentId) === String(dept._id) ? 'selected' : '' %>><%= dept.name %></option>
+      <% }); %>
+    </select>
+  </label>
+
+  <label>
+    Phone
+    <input type="text" name="phone" value="<%= member.phone || '' %>">
+  </label>
+
+  <label>
+    Status
+    <select name="status" required>
+      <% ['active','inactive','retired','left','pending'].forEach(function(value) { %>
+        <option value="<%= value %>" <%= member.status === value ? 'selected' : '' %>><%= value %></option>
+      <% }); %>
+    </select>
+  </label>
+
+  <label>
+    Email (read-only)
+    <input type="text" value="<%= member.email || '' %>" disabled>
+  </label>
+
+  <label>
+    Email Status (read-only)
+    <input type="text" value="<%= member.emailStatus %>" disabled>
+  </label>
+
+  <button type="submit">Save Changes</button>
+</form>
+
+<p><a href="/portal/staff/members">Back to Member Directory</a></p>

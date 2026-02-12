@@ -1,0 +1,70 @@
+<section class="page-header">
+  <h1>Member Directory</h1>
+  <p>Search and filter members.</p>
+</section>
+
+<form method="get" action="/portal/staff/members" class="form-card">
+  <label>
+    Search
+    <input type="text" name="q" value="<%= q %>" placeholder="Name, CID, or email">
+  </label>
+
+  <label>
+    Department
+    <select name="department">
+      <option value="">All Departments</option>
+      <% departments.forEach(function(dept) { %>
+        <option value="<%= dept._id %>" <%= department === String(dept._id) ? 'selected' : '' %>><%= dept.name %></option>
+      <% }); %>
+    </select>
+  </label>
+
+  <button type="submit">Search</button>
+</form>
+
+<p><strong>Total:</strong> <%= total %></p>
+
+<% if (!members || members.length === 0) { %>
+  <p>No members found.</p>
+<% } else { %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>CID</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Department</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% members.forEach(function(member) { %>
+        <tr>
+          <td>
+            <a href="/portal/staff/members/<%= member._id %>">
+              <%= member.lastName %>, <%= member.firstName %>
+            </a>
+          </td>
+          <td><%= member.cid %></td>
+          <td><%= member.email || '—' %></td>
+          <td><%= member.status %></td>
+          <td>
+            <%= member.departmentId && member.departmentId.name ? member.departmentId.name : '—' %>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } %>
+
+<% if (totalPages > 1) { %>
+  <nav class="pagination">
+    <% if (page > 1) { %>
+      <a href="/portal/staff/members?q=<%= encodeURIComponent(q) %>&department=<%= department %>&page=<%= page - 1 %>">Previous</a>
+    <% } %>
+    <span>Page <%= page %> of <%= totalPages %></span>
+    <% if (page < totalPages) { %>
+      <a href="/portal/staff/members?q=<%= encodeURIComponent(q) %>&department=<%= department %>&page=<%= page + 1 %>">Next</a>
+    <% } %>
+  </nav>
+<% } %>
