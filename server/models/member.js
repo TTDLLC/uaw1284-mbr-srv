@@ -40,6 +40,11 @@ const memberSchema = new mongoose.Schema({
     required: false,
     index: true
   },
+  labelIds: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Label',
+    default: []
+  }],
   email: {
     type: String,
     trim: true,
@@ -115,5 +120,6 @@ const memberSchema = new mongoose.Schema({
 
 memberSchema.index({ lastName: 1, firstName: 1 });
 memberSchema.index({ unit: 1, status: 1 });
+memberSchema.index({ labelIds: 1 });
 
 module.exports = mongoose.models.Member || mongoose.model('Member', memberSchema);

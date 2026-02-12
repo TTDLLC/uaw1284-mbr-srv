@@ -12,8 +12,9 @@ const router = express.Router();
 
 const notificationSchema = z.object({
   channel: z.enum(['email', 'sms', 'both']),
-  audienceType: z.enum(['all', 'departments']),
+  audienceType: z.enum(['all', 'departments', 'labels']),
   departmentIds: z.array(z.string()).optional().default([]),
+  labelIds: z.array(z.string()).optional().default([]),
   subject: z.string().optional(),
   body: z.string().min(1, 'Message body is required.'),
   isTestSend: z.string().optional()
@@ -41,6 +42,7 @@ const buildFormData = (body, defaults = {}) => ({
   channel: body?.channel || defaults.channel || 'email',
   audienceType: body?.audienceType || defaults.audienceType || 'all',
   departmentIds: normalizeDepartmentIds(body?.departmentIds || defaults.departmentIds || []),
+  labelIds: normalizeDepartmentIds(body?.labelIds || defaults.labelIds || []),
   subject: body?.subject || defaults.subject || '',
   body: body?.body || defaults.body || '',
   isTestSend: body?.isTestSend || defaults.isTestSend || ''
@@ -75,6 +77,11 @@ const buildPreviewPayload = async ({ formData, user }) => {
     members = await models.Member.find({
       status: 'active',
       departmentId: { $in: toDepartmentIds(formData.departmentIds || []) }
+    }).lean();
+  } else if (formData.audienceType === 'labels') {
+    members = await models.Member.find({
+      status: 'active',
+      labelIds: { $in: toDepartmentIds(formData.labelIds || []) }
     }).lean();
   } else {
     members = await models.Member.find({ status: 'active' }).lean();
@@ -139,14 +146,16 @@ router.get('/notifications/new', attachUser, requireAuth, requireRole('staff'), 
       req.session.notificationLimiterMessage = null;
     }
     const departments = await getDepartments();
+    const labels = await models.Label.find({ active: true }).sort({ name: 1 }).lean();
     const previewForm = normalizePreviewSession(req);
 
     return res.render('portal/staff/notifications/new', {
       title: 'Compose Notification',
       layout: 'layout',
       errors: limiterMessage ? [limiterMessage] : [],
-      form: previewForm || { channel: 'email', audienceType: 'all', departmentIds: [], subject: '', body: '', isTestSend: '' },
-      departments
+      form: previewForm || { channel: 'email', audienceType: 'all', departmentIds: [], labelIds: [], subject: '', body: '', isTestSend: '' },
+      departments,
+      labels
     });
   } catch (err) {
     return next(err);
@@ -162,6 +171,7 @@ router.post(
     try {
       const parsed = notificationSchema.safeParse(req.body);
       const departments = await getDepartments();
+      const labels = await models.Label.find({ active: true }).sort({ name: 1 }).lean();
 
       if (!parsed.success) {
         const form = buildFormData(req.body);
@@ -170,7 +180,8 @@ router.post(
           layout: 'layout',
           errors: ['Please complete all required fields.'],
           form,
-          departments
+          departments,
+          labels
         });
       }
 
@@ -181,7 +192,8 @@ router.post(
           layout: 'layout',
           errors: ['Subject is required for email notifications.'],
           form: formData,
-          departments
+          departments,
+          labels
         });
       }
 
@@ -192,15 +204,46 @@ router.post(
             layout: 'layout',
             errors: ['Select at least one department.'],
             form: formData,
-            departments
+            departments,
+            labels
           });
         }
       }
 
-      const preview = await buildPreviewPayload({ formData, user: req.user });
+      if (formData.audienceType === 'labels' && !isTestSendSelected(formData)) {
+        if (!toDepartmentIds(formData.labelIds).length) {
+          return res.status(400).render('portal/staff/notifications/new', {
+            title: 'Compose Notification',
+            layout: 'layout',
+            errors: ['Select at least one label.'],
+            form: formData,
+            departments,
+            labels
+          });
+        }
+      }
+
+      const activeLabelIds = labels.map((label) => String(label._id));
+      const selectedLabelIds = toDepartmentIds(formData.labelIds || [])
+        .filter((id) => activeLabelIds.includes(String(id)));
+
+      if (formData.audienceType === 'labels' && !isTestSendSelected(formData)) {
+        if (!selectedLabelIds.length) {
+          return res.status(400).render('portal/staff/notifications/new', {
+            title: 'Compose Notification',
+            layout: 'layout',
+            errors: ['Select at least one label.'],
+            form: formData,
+            departments,
+            labels
+          });
+        }
+      }
+
+      const preview = await buildPreviewPayload({ formData: { ...formData, labelIds: selectedLabelIds }, user: req.user });
 
       req.session.notificationPreview = {
-        formData,
+        formData: { ...formData, labelIds: selectedLabelIds },
         counts: {
           totalTargeted: preview.totalTargeted,
           emailEligible: preview.emailEligible,
@@ -213,9 +256,10 @@ router.post(
       return res.render('portal/staff/notifications/preview', {
         title: 'Preview Notification',
         layout: 'layout',
-        form: formData,
+        form: req.session.notificationPreview.formData,
         counts: req.session.notificationPreview.counts,
         departments,
+        labels,
         isTestSend: preview.isTestSend
       });
     } catch (err) {
@@ -242,6 +286,7 @@ router.post(
 
       const { formData, counts, memberIdsByChannel, isTestSend } = preview;
       const departmentIds = toDepartmentIds(formData.departmentIds || []);
+      const labelIds = toDepartmentIds(formData.labelIds || []);
       const channel = formData.channel;
       const audienceType = isTestSend ? 'test' : formData.audienceType;
 
@@ -250,6 +295,7 @@ router.post(
         channel,
         audienceType,
         departmentIds: audienceType === 'departments' ? departmentIds : [],
+        labelIds: audienceType === 'labels' ? labelIds : [],
         subject: channel === 'sms' ? null : formData.subject,
         body: formData.body,
         status: 'queued',
@@ -328,10 +374,15 @@ router.get('/notifications/:id', attachUser, requireAuth, requireRole('staff'), 
       createdAtFormatted: failure.createdAt ? new Date(failure.createdAt).toLocaleString() : '—'
     }));
 
+    const labels = notification.labelIds?.length
+      ? await models.Label.find({ _id: { $in: notification.labelIds } }).lean()
+      : [];
+
     return res.render('portal/staff/notifications/show', {
       title: 'Notification Detail',
       layout: 'layout',
       notification,
+      labels,
       failures: failureRows
     });
   } catch (err) {

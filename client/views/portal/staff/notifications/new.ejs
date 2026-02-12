@@ -30,6 +30,7 @@
     <select name="audienceType" required>
       <option value="all" <%= form.audienceType === 'all' ? 'selected' : '' %>>All Members</option>
       <option value="departments" <%= form.audienceType === 'departments' ? 'selected' : '' %>>By Department</option>
+      <option value="labels" <%= form.audienceType === 'labels' ? 'selected' : '' %>>By Label</option>
     </select>
   </label>
 
@@ -38,6 +39,15 @@
     <select name="departmentIds" multiple size="5">
       <% departments.forEach(function(dept) { %>
         <option value="<%= dept._id %>" <%= form.departmentIds.includes(String(dept._id)) ? 'selected' : '' %>><%= dept.name %></option>
+      <% }); %>
+    </select>
+  </label>
+
+  <label>
+    Labels (if applicable)
+    <select name="labelIds" multiple size="5">
+      <% labels.forEach(function(label) { %>
+        <option value="<%= label._id %>" <%= form.labelIds.includes(String(label._id)) ? 'selected' : '' %>><%= label.name %></option>
       <% }); %>
     </select>
   </label>

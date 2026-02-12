@@ -14,12 +14,16 @@ const notificationSchema = new mongoose.Schema({
   },
   audienceType: {
     type: String,
-    enum: ['all', 'departments', 'test'],
+    enum: ['all', 'departments', 'labels', 'test'],
     required: true
   },
   departmentIds: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Department'
+  }],
+  labelIds: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Label'
   }],
   subject: {
     type: String,

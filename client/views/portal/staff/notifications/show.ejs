@@ -8,6 +8,12 @@
   <ul class="summary-list">
     <li>Channel: <%= notification.channel %></li>
     <li>Audience: <%= notification.audienceType %></li>
+    <% if (notification.audienceType === 'labels') { %>
+      <li>
+        Labels:
+        <%= labels && labels.length ? labels.map(function(label) { return label.name; }).join(', ') : '—' %>
+      </li>
+    <% } %>
     <li>Total targeted: <%= notification.totalTargeted || 0 %></li>
     <li>Email eligible: <%= notification.emailEligible || 0 %></li>
     <li>SMS eligible: <%= notification.smsEligible || 0 %></li>

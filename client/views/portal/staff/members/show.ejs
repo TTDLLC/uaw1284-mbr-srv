@@ -59,6 +59,19 @@
   </label>
 
   <label>
+    Labels
+    <select name="labelIds" multiple size="5">
+      <% activeLabels.forEach(function(label) { %>
+        <option value="<%= label._id %>" <%= (member.labelIds || []).map(String).includes(String(label._id)) ? 'selected' : '' %>><%= label.name %></option>
+      <% }); %>
+    </select>
+  </label>
+
+  <% if (memberLabels && memberLabels.length) { %>
+    <p>Current labels: <%= memberLabels.map(function(label) { return label.name; }).join(', ') %></p>
+  <% } %>
+
+  <label>
     Email (read-only)
     <input type="text" value="<%= member.email || '' %>" disabled>
   </label>

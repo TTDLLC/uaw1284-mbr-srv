@@ -98,11 +98,21 @@ router.get('/members/:id', attachUser, requireAuth, requireRole('staff'), async 
       .sort({ name: 1 })
       .lean();
 
+    const activeLabels = await models.Label.find({ active: true })
+      .sort({ name: 1 })
+      .lean();
+
+    const memberLabels = member.labelIds?.length
+      ? await models.Label.find({ _id: { $in: member.labelIds } }).lean()
+      : [];
+
     return res.render('portal/staff/members/show', {
       title: 'Member Detail',
       layout: 'layout',
       member,
       departments,
+      activeLabels,
+      memberLabels,
       errors: [],
       success: null
     });
@@ -126,17 +136,39 @@ router.post('/members/:id', attachUser, requireAuth, requireRole('staff'), async
       status: req.body?.status
     });
 
+    const activeLabels = await models.Label.find({ active: true })
+      .sort({ name: 1 })
+      .lean();
+
+    const submittedLabelIds = Array.isArray(req.body?.labelIds)
+      ? req.body.labelIds
+      : req.body?.labelIds
+        ? [req.body.labelIds]
+        : [];
+
+    const activeLabelIds = activeLabels.map((label) => String(label._id));
+    const selectedActiveLabelIds = submittedLabelIds.filter((id) => activeLabelIds.includes(String(id)));
+    const inactiveLabelIds = (member.labelIds || [])
+      .map((id) => String(id))
+      .filter((id) => !activeLabelIds.includes(id));
+    const mergedLabelIds = [...new Set([...selectedActiveLabelIds, ...inactiveLabelIds])];
+
     if (!parsed.success) {
       const fieldErrors = parsed.error.issues.map((issue) => issue.message);
       const departments = await models.Department.find({ active: true })
         .sort({ name: 1 })
         .lean();
       const memberView = { ...member.toObject(), ...req.body };
+      const memberLabels = member.labelIds?.length
+        ? await models.Label.find({ _id: { $in: member.labelIds } }).lean()
+        : [];
       return res.status(400).render('portal/staff/members/show', {
         title: 'Member Detail',
         layout: 'layout',
         member: memberView,
         departments,
+        activeLabels,
+        memberLabels,
         errors: fieldErrors.length ? fieldErrors : ['Please complete all required fields.'],
         success: null
       });
@@ -147,7 +179,8 @@ router.post('/members/:id', attachUser, requireAuth, requireRole('staff'), async
       lastName: member.lastName,
       departmentId: member.departmentId?.toString() || '',
       phone: member.phone || '',
-      status: member.status || ''
+      status: member.status || '',
+      labels: (await models.Label.find({ _id: { $in: member.labelIds || [] } }).lean()).map((label) => label.name).sort()
     };
 
     const nextData = parsed.data;
@@ -159,6 +192,7 @@ router.post('/members/:id', attachUser, requireAuth, requireRole('staff'), async
     member.departmentId = nextData.departmentId;
     member.phone = nextPhone;
     member.status = nextData.status;
+    member.labelIds = mergedLabelIds;
 
     if (phoneChanged) {
       member.phoneVerified = false;
@@ -173,7 +207,8 @@ router.post('/members/:id', attachUser, requireAuth, requireRole('staff'), async
       lastName: member.lastName,
       departmentId: member.departmentId?.toString() || '',
       phone: member.phone || '',
-      status: member.status || ''
+      status: member.status || '',
+      labels: (await models.Label.find({ _id: { $in: member.labelIds || [] } }).lean()).map((label) => label.name).sort()
     };
 
     await logMemberUpdate({
@@ -188,11 +223,17 @@ router.post('/members/:id', attachUser, requireAuth, requireRole('staff'), async
       .sort({ name: 1 })
       .lean();
 
+    const memberLabels = member.labelIds?.length
+      ? await models.Label.find({ _id: { $in: member.labelIds } }).lean()
+      : [];
+
     return res.render('portal/staff/members/show', {
       title: 'Member Detail',
       layout: 'layout',
       member: member.toObject(),
       departments,
+      activeLabels,
+      memberLabels,
       errors: [],
       success: 'Member updated successfully.'
     });

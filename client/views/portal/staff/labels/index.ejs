@@ -1,0 +1,33 @@
+<section class="page-header">
+  <h1>Labels</h1>
+  <p>Manage member labels for segmentation.</p>
+</section>
+
+<p><a href="/portal/staff/labels/new">Create new label</a></p>
+
+<% if (!labels || labels.length === 0) { %>
+  <p>No labels found.</p>
+<% } else { %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Slug</th>
+        <th>Color</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% labels.forEach(function(label) { %>
+        <tr>
+          <td><%= label.name %></td>
+          <td><%= label.slug %></td>
+          <td><%= label.color || '—' %></td>
+          <td><%= label.active ? 'Active' : 'Archived' %></td>
+          <td><a href="/portal/staff/labels/<%= label._id %>/edit">Edit</a></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } %>

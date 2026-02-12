@@ -1,0 +1,34 @@
+<section class="page-header">
+  <h1>New Label</h1>
+</section>
+
+<% if (errors && errors.length) { %>
+  <div class="notice error">
+    <ul>
+      <% errors.forEach(function(err) { %>
+        <li><%= err %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/portal/staff/labels" class="form-card">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>
+    Name
+    <input type="text" name="name" value="<%= form.name %>" required>
+  </label>
+
+  <label>
+    Color (optional)
+    <input type="text" name="color" value="<%= form.color %>">
+  </label>
+
+  <label class="checkbox-field">
+    <input type="checkbox" name="active" value="true" <%= form.active ? 'checked' : '' %>>
+    Active
+  </label>
+
+  <button type="submit">Create Label</button>
+</form>

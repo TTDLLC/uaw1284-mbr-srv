@@ -1,0 +1,41 @@
+<section class="page-header">
+  <h1>Edit Label</h1>
+</section>
+
+<% if (errors && errors.length) { %>
+  <div class="notice error">
+    <ul>
+      <% errors.forEach(function(err) { %>
+        <li><%= err %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/portal/staff/labels/<%= label._id %>" class="form-card">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>
+    Name
+    <input type="text" name="name" value="<%= label.name %>" required>
+  </label>
+
+  <label>
+    Slug (read-only)
+    <input type="text" value="<%= label.slug %>" disabled>
+  </label>
+
+  <label>
+    Color (optional)
+    <input type="text" name="color" value="<%= label.color || '' %>">
+  </label>
+
+  <label class="checkbox-field">
+    <input type="checkbox" name="active" value="true" <%= label.active ? 'checked' : '' %>>
+    Active
+  </label>
+
+  <button type="submit">Save Changes</button>
+</form>
+
+<p><a href="/portal/staff/labels">Back to labels</a></p>

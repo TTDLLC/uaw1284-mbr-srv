@@ -19,6 +19,15 @@
           .join(', ') || '—' %>
       </li>
     <% } %>
+    <% if (form.audienceType === 'labels' && !isTestSend) { %>
+      <li>
+        Labels:
+        <%= labels
+          .filter(function(l) { return form.labelIds.includes(String(l._id)); })
+          .map(function(l) { return l.name; })
+          .join(', ') || '—' %>
+      </li>
+    <% } %>
     <li>Total targeted: <%= counts.totalTargeted %></li>
     <li>Email eligible: <%= counts.emailEligible %></li>
     <li>SMS eligible: <%= counts.smsEligible %></li>

@@ -3,6 +3,7 @@ module.exports = {
   AuditLog: require('./auditLog'),
   Department: require('./department'),
   EmailChangeRequest: require('./emailChangeRequest'),
+  Label: require('./label'),
   Member: require('./member'),
   Notification: require('./notification'),
   NotificationRecipient: require('./notificationRecipient'),
