@@ -35,6 +35,8 @@
         <tr>
           <th>Channel</th>
           <th>Destination</th>
+          <th>Attempts</th>
+          <th>Error Code</th>
           <th>Error</th>
           <th>Time</th>
         </tr>
@@ -44,6 +46,8 @@
           <tr>
             <td><%= failure.channel %></td>
             <td><%= failure.destination %></td>
+            <td><%= failure.attempts %></td>
+            <td><%= failure.errorCode %></td>
             <td><%= failure.error %></td>
             <td><%= failure.createdAtFormatted %></td>
           </tr>

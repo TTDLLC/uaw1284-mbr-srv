@@ -14,7 +14,7 @@ const notificationSchema = new mongoose.Schema({
   },
   audienceType: {
     type: String,
-    enum: ['all', 'departments'],
+    enum: ['all', 'departments', 'test'],
     required: true
   },
   departmentIds: [{

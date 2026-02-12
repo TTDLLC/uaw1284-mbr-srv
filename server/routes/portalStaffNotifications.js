@@ -15,7 +15,8 @@ const notificationSchema = z.object({
   audienceType: z.enum(['all', 'departments']),
   departmentIds: z.array(z.string()).optional().default([]),
   subject: z.string().optional(),
-  body: z.string().min(1, 'Message body is required.')
+  body: z.string().min(1, 'Message body is required.'),
+  isTestSend: z.string().optional()
 });
 
 const ensureSubject = (channel, subject) => {
@@ -26,6 +27,83 @@ const ensureSubject = (channel, subject) => {
 };
 
 const toDepartmentIds = (ids) => ids.filter(Boolean);
+
+const getDepartments = () => models.Department.find({ active: true }).sort({ name: 1 }).lean();
+
+const normalizeDepartmentIds = (value) => {
+  if (!value) {
+    return [];
+  }
+  return Array.isArray(value) ? value : [value];
+};
+
+const buildFormData = (body, defaults = {}) => ({
+  channel: body?.channel || defaults.channel || 'email',
+  audienceType: body?.audienceType || defaults.audienceType || 'all',
+  departmentIds: normalizeDepartmentIds(body?.departmentIds || defaults.departmentIds || []),
+  subject: body?.subject || defaults.subject || '',
+  body: body?.body || defaults.body || '',
+  isTestSend: body?.isTestSend || defaults.isTestSend || ''
+});
+
+const normalizePreviewSession = (req) => {
+  if (!req.session?.notificationPreview?.formData) {
+    return null;
+  }
+  return req.session.notificationPreview.formData;
+};
+
+const isTestSendSelected = (formData) => Boolean(formData?.isTestSend);
+
+const getMemberEligibility = (member) => ({
+  emailEligible: member.emailStatus === 'approved' && Boolean(member.email),
+  smsEligible: member.phoneVerified === true && member.smsOptIn === true && Boolean(member.phone)
+});
+
+const buildPreviewPayload = async ({ formData, user }) => {
+  const isTestSend = isTestSendSelected(formData);
+  let members = [];
+
+  if (isTestSend) {
+    if (user?.memberId) {
+      const member = await models.Member.findById(user.memberId).lean();
+      if (member) {
+        members = [member];
+      }
+    }
+  } else if (formData.audienceType === 'departments') {
+    members = await models.Member.find({
+      status: 'active',
+      departmentId: { $in: toDepartmentIds(formData.departmentIds || []) }
+    }).lean();
+  } else {
+    members = await models.Member.find({ status: 'active' }).lean();
+  }
+
+  const emailMembers = [];
+  const smsMembers = [];
+
+  members.forEach((member) => {
+    const eligibility = getMemberEligibility(member);
+    if ((formData.channel === 'email' || formData.channel === 'both') && eligibility.emailEligible) {
+      emailMembers.push(member);
+    }
+    if ((formData.channel === 'sms' || formData.channel === 'both') && eligibility.smsEligible) {
+      smsMembers.push(member);
+    }
+  });
+
+  return {
+    isTestSend,
+    totalTargeted: isTestSend ? (members.length ? 1 : 0) : members.length,
+    emailEligible: emailMembers.length,
+    smsEligible: smsMembers.length,
+    memberIdsByChannel: {
+      email: emailMembers.map((member) => member._id.toString()),
+      sms: smsMembers.map((member) => member._id.toString())
+    }
+  };
+};
 
 router.get('/notifications', attachUser, requireAuth, requireRole('staff'), async (_req, res, next) => {
   try {
@@ -54,27 +132,97 @@ router.get('/notifications', attachUser, requireAuth, requireRole('staff'), asyn
   }
 });
 
-router.get('/notifications/new', attachUser, requireAuth, requireRole('staff'), async (_req, res, next) => {
+router.get('/notifications/new', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
   try {
-    const limiterMessage = res.req?.session?.notificationLimiterMessage;
-    if (res.req?.session) {
-      res.req.session.notificationLimiterMessage = null;
+    const limiterMessage = req.session?.notificationLimiterMessage;
+    if (req.session) {
+      req.session.notificationLimiterMessage = null;
     }
-    const departments = await models.Department.find({ active: true })
-      .sort({ name: 1 })
-      .lean();
+    const departments = await getDepartments();
+    const previewForm = normalizePreviewSession(req);
 
     return res.render('portal/staff/notifications/new', {
       title: 'Compose Notification',
       layout: 'layout',
       errors: limiterMessage ? [limiterMessage] : [],
-      form: { channel: 'email', audienceType: 'all', departmentIds: [], subject: '', body: '' },
+      form: previewForm || { channel: 'email', audienceType: 'all', departmentIds: [], subject: '', body: '', isTestSend: '' },
       departments
     });
   } catch (err) {
     return next(err);
   }
 });
+
+router.post(
+  '/notifications/preview',
+  attachUser,
+  requireAuth,
+  requireRole('staff'),
+  async (req, res, next) => {
+    try {
+      const parsed = notificationSchema.safeParse(req.body);
+      const departments = await getDepartments();
+
+      if (!parsed.success) {
+        const form = buildFormData(req.body);
+        return res.status(400).render('portal/staff/notifications/new', {
+          title: 'Compose Notification',
+          layout: 'layout',
+          errors: ['Please complete all required fields.'],
+          form,
+          departments
+        });
+      }
+
+      const formData = buildFormData(parsed.data);
+      if (!ensureSubject(formData.channel, formData.subject)) {
+        return res.status(400).render('portal/staff/notifications/new', {
+          title: 'Compose Notification',
+          layout: 'layout',
+          errors: ['Subject is required for email notifications.'],
+          form: formData,
+          departments
+        });
+      }
+
+      if (formData.audienceType === 'departments' && !isTestSendSelected(formData)) {
+        if (!toDepartmentIds(formData.departmentIds).length) {
+          return res.status(400).render('portal/staff/notifications/new', {
+            title: 'Compose Notification',
+            layout: 'layout',
+            errors: ['Select at least one department.'],
+            form: formData,
+            departments
+          });
+        }
+      }
+
+      const preview = await buildPreviewPayload({ formData, user: req.user });
+
+      req.session.notificationPreview = {
+        formData,
+        counts: {
+          totalTargeted: preview.totalTargeted,
+          emailEligible: preview.emailEligible,
+          smsEligible: preview.smsEligible
+        },
+        memberIdsByChannel: preview.memberIdsByChannel,
+        isTestSend: preview.isTestSend
+      };
+
+      return res.render('portal/staff/notifications/preview', {
+        title: 'Preview Notification',
+        layout: 'layout',
+        form: formData,
+        counts: req.session.notificationPreview.counts,
+        departments,
+        isTestSend: preview.isTestSend
+      });
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
 
 router.post(
   '/notifications',
@@ -84,99 +232,40 @@ router.post(
   limiters.notificationCreate,
   async (req, res, next) => {
     try {
-      const parsed = notificationSchema.safeParse(req.body);
-      if (!parsed.success) {
-        const departments = await models.Department.find({ active: true })
-          .sort({ name: 1 })
-          .lean();
-        return res.status(400).render('portal/staff/notifications/new', {
-          title: 'Compose Notification',
-          layout: 'layout',
-          errors: ['Please complete all required fields.'],
-          form: {
-            channel: req.body?.channel || 'email',
-            audienceType: req.body?.audienceType || 'all',
-            departmentIds: req.body?.departmentIds || [],
-            subject: req.body?.subject || '',
-            body: req.body?.body || ''
-          },
-          departments
-        });
-      }
-
-      const { channel, audienceType, subject, body } = parsed.data;
-      const departmentIds = toDepartmentIds(parsed.data.departmentIds || []);
-
-      if (!ensureSubject(channel, subject)) {
-        const departments = await models.Department.find({ active: true })
-          .sort({ name: 1 })
-          .lean();
-        return res.status(400).render('portal/staff/notifications/new', {
-          title: 'Compose Notification',
-          layout: 'layout',
-          errors: ['Subject is required for email notifications.'],
-          form: {
-            channel,
-            audienceType,
-            departmentIds,
-            subject: subject || '',
-            body
-          },
-          departments
-        });
-      }
-
-      const memberQuery = { status: 'active' };
-      if (audienceType === 'departments') {
-        if (departmentIds.length === 0) {
-          const departments = await models.Department.find({ active: true })
-            .sort({ name: 1 })
-            .lean();
-          return res.status(400).render('portal/staff/notifications/new', {
-            title: 'Compose Notification',
-            layout: 'layout',
-            errors: ['Select at least one department.'],
-            form: {
-              channel,
-              audienceType,
-              departmentIds,
-              subject: subject || '',
-              body
-            },
-            departments
-          });
+      const preview = req.session?.notificationPreview;
+      if (!preview?.formData) {
+        if (req.session) {
+          req.session.notificationLimiterMessage = 'Please preview your notification before sending.';
         }
-        memberQuery.departmentId = { $in: departmentIds };
+        return res.redirect('/portal/staff/notifications/new');
       }
 
-      const members = await models.Member.find(memberQuery).lean();
-
-      const emailEligible = members.filter((member) =>
-        member.emailStatus === 'approved' && member.email
-      );
-
-      const smsEligible = members.filter((member) =>
-        member.phoneVerified === true && member.smsOptIn === true && member.phone
-      );
+      const { formData, counts, memberIdsByChannel, isTestSend } = preview;
+      const departmentIds = toDepartmentIds(formData.departmentIds || []);
+      const channel = formData.channel;
+      const audienceType = isTestSend ? 'test' : formData.audienceType;
 
       const notification = await models.Notification.create({
         createdByUserId: req.user?._id || req.user?.id,
         channel,
         audienceType,
         departmentIds: audienceType === 'departments' ? departmentIds : [],
-        subject: channel === 'sms' ? null : subject,
-        body,
+        subject: channel === 'sms' ? null : formData.subject,
+        body: formData.body,
         status: 'queued',
-        totalTargeted: members.length,
-        emailEligible: emailEligible.length,
-        smsEligible: smsEligible.length,
+        totalTargeted: counts.totalTargeted,
+        emailEligible: counts.emailEligible,
+        smsEligible: counts.smsEligible,
         sent: 0,
         failed: 0
       });
 
       const recipients = [];
       if (channel === 'email' || channel === 'both') {
-        emailEligible.forEach((member) => {
+        const emailMembers = await models.Member.find({ _id: { $in: memberIdsByChannel.email } })
+          .select({ email: 1 })
+          .lean();
+        emailMembers.forEach((member) => {
           recipients.push({
             notificationId: notification._id,
             memberId: member._id,
@@ -186,7 +275,10 @@ router.post(
         });
       }
       if (channel === 'sms' || channel === 'both') {
-        smsEligible.forEach((member) => {
+        const smsMembers = await models.Member.find({ _id: { $in: memberIdsByChannel.sms } })
+          .select({ phone: 1 })
+          .lean();
+        smsMembers.forEach((member) => {
           recipients.push({
             notificationId: notification._id,
             memberId: member._id,
@@ -201,6 +293,9 @@ router.post(
       }
 
       enqueueNotificationSend(notification._id);
+      if (req.session) {
+        req.session.notificationPreview = null;
+      }
 
       return res.redirect(`/portal/staff/notifications/${notification._id}`);
     } catch (err) {
@@ -227,7 +322,9 @@ router.get('/notifications/:id', attachUser, requireAuth, requireRole('staff'), 
     const failureRows = failures.map((failure) => ({
       channel: failure.channel,
       destination: failure.destination,
-      error: failure.error || 'Send failed',
+      error: failure.error ? String(failure.error).slice(0, 140) : 'Send failed',
+      errorCode: failure.errorCode || 'UNKNOWN',
+      attempts: failure.attempts || 0,
       createdAtFormatted: failure.createdAt ? new Date(failure.createdAt).toLocaleString() : '—'
     }));
 

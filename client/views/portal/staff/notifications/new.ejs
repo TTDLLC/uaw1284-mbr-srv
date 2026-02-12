@@ -13,7 +13,7 @@
   </div>
 <% } %>
 
-<form method="post" action="/portal/staff/notifications" class="form-card">
+<form method="post" action="/portal/staff/notifications/preview" class="form-card">
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
   <label>
@@ -52,5 +52,10 @@
     <textarea name="body" rows="6" required><%= form.body %></textarea>
   </label>
 
-  <button type="submit">Queue Notification</button>
+  <label class="checkbox-field">
+    <input type="checkbox" name="isTestSend" value="1" <%= form.isTestSend ? 'checked' : '' %>>
+    Send a test to myself only
+  </label>
+
+  <button type="submit">Preview</button>
 </form>

@@ -1,0 +1,42 @@
+<section class="page-header">
+  <h1>Preview Notification</h1>
+  <% if (isTestSend) { %>
+    <p class="notice warning">TEST SEND — only you will receive this.</p>
+  <% } %>
+</section>
+
+<section class="summary">
+  <h2>Summary</h2>
+  <ul class="summary-list">
+    <li>Channel: <%= form.channel %></li>
+    <li>Audience: <%= isTestSend ? 'test' : form.audienceType %></li>
+    <% if (form.audienceType === 'departments' && !isTestSend) { %>
+      <li>
+        Departments:
+        <%= departments
+          .filter(function(d) { return form.departmentIds.includes(String(d._id)); })
+          .map(function(d) { return d.name; })
+          .join(', ') || '—' %>
+      </li>
+    <% } %>
+    <li>Total targeted: <%= counts.totalTargeted %></li>
+    <li>Email eligible: <%= counts.emailEligible %></li>
+    <li>SMS eligible: <%= counts.smsEligible %></li>
+  </ul>
+</section>
+
+<section class="summary">
+  <h2>Message</h2>
+  <% if (form.channel !== 'sms') { %>
+    <p><strong>Subject:</strong> <%= form.subject || '—' %></p>
+  <% } %>
+  <p><strong>Body:</strong></p>
+  <pre><%= form.body %></pre>
+</section>
+
+<form method="post" action="/portal/staff/notifications" class="inline-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <button type="submit">Send</button>
+</form>
+
+<p><a href="/portal/staff/notifications/new">Edit</a></p>

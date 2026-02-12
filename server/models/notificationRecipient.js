@@ -22,11 +22,24 @@ const notificationRecipientSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  attempts: {
+    type: Number,
+    default: 0
+  },
+  lastAttemptAt: {
+    type: Date,
+    default: null
+  },
   status: {
     type: String,
     enum: ['queued', 'sent', 'failed', 'skipped'],
     default: 'queued',
     index: true
+  },
+  errorCode: {
+    type: String,
+    enum: ['INVALID_DESTINATION', 'PROVIDER_REJECTED', 'RATE_LIMITED', 'TEMPORARY_FAILURE', 'UNKNOWN'],
+    default: null
   },
   error: {
     type: String,

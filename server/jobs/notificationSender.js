@@ -1,12 +1,15 @@
 const models = require('../models');
 const { sendBroadcastEmail } = require('../services/emailService');
 const { sendBroadcastSms } = require('../services/smsService');
+const { categorizeProviderError } = require('../utils/providerErrors');
 
 const BATCH_SIZE = 50;
 let isRunning = false;
 const pendingQueue = [];
 
 const processRecipient = async (notification, recipient) => {
+  const nextAttempts = (recipient.attempts || 0) + 1;
+  const lastAttemptAt = new Date();
   try {
     if (recipient.channel === 'email') {
       await sendBroadcastEmail({
@@ -27,21 +30,35 @@ const processRecipient = async (notification, recipient) => {
 
     await models.NotificationRecipient.updateOne(
       { _id: recipient._id },
-      { $set: { status: 'sent', error: null } }
+      { $set: { status: 'sent', error: null, errorCode: null, attempts: nextAttempts, lastAttemptAt } }
     );
     await models.Notification.updateOne(
       { _id: notification._id },
       { $inc: { sent: 1 } }
     );
   } catch (err) {
+    const { errorCode, safeMessage } = categorizeProviderError(err);
+    const noRetry = errorCode === 'INVALID_DESTINATION' || errorCode === 'PROVIDER_REJECTED';
+    const shouldRetry = !noRetry && nextAttempts < 2;
+    const nextStatus = shouldRetry ? 'queued' : 'failed';
     await models.NotificationRecipient.updateOne(
       { _id: recipient._id },
-      { $set: { status: 'failed', error: err?.message || 'Send failed' } }
+      {
+        $set: {
+          status: nextStatus,
+          error: safeMessage,
+          errorCode,
+          attempts: nextAttempts,
+          lastAttemptAt
+        }
+      }
     );
-    await models.Notification.updateOne(
-      { _id: notification._id },
-      { $inc: { failed: 1 } }
-    );
+    if (nextStatus === 'failed') {
+      await models.Notification.updateOne(
+        { _id: notification._id },
+        { $inc: { failed: 1 } }
+      );
+    }
   }
 };
 
@@ -54,7 +71,8 @@ const runNotification = async (notificationId) => {
   while (true) {
     const recipients = await models.NotificationRecipient.find({
       notificationId,
-      status: 'queued'
+      status: 'queued',
+      attempts: { $lt: 2 }
     })
       .limit(BATCH_SIZE)
       .lean();
