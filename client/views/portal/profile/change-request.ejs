@@ -1,0 +1,47 @@
+<section class="page-header">
+  <h1>Request Profile Update</h1>
+  <p>Submit changes for staff review. Email changes use a separate request flow.</p>
+</section>
+
+<% if (errors && errors.length) { %>
+  <div class="notice error">
+    <ul>
+      <% errors.forEach(function(err) { %>
+        <li><%= err %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<form method="post" action="/portal/profile/change-request" class="form-card">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+  <label>
+    First name
+    <input type="text" name="firstName" value="<%= form.firstName %>">
+  </label>
+
+  <label>
+    Last name
+    <input type="text" name="lastName" value="<%= form.lastName %>">
+  </label>
+
+  <label>
+    Phone
+    <input type="text" name="phone" value="<%= form.phone %>">
+  </label>
+
+  <label>
+    Department
+    <select name="departmentId">
+      <option value="">Select department</option>
+      <% departments.forEach(function(dept) { %>
+        <option value="<%= dept._id %>" <%= String(form.departmentId) === String(dept._id) ? 'selected' : '' %>><%= dept.name %></option>
+      <% }); %>
+    </select>
+  </label>
+
+  <button type="submit">Submit Request</button>
+</form>
+
+<p><a href="/portal">Back to portal</a></p>

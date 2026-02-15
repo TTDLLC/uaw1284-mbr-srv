@@ -5,6 +5,7 @@ module.exports = {
   EmailChangeRequest: require('./emailChangeRequest'),
   Label: require('./label'),
   Member: require('./member'),
+  MemberChangeRequest: require('./memberChangeRequest'),
   AnnouncementRead: require('./announcementRead'),
   Notification: require('./notification'),
   NotificationRecipient: require('./notificationRecipient'),

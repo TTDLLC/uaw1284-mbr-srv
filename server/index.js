@@ -196,8 +196,10 @@ async function start() {
   app.use('/register', require('./routes/registerPhone'));
   app.use('/portal', require('./routes/portal'));
   app.use('/portal', require('./routes/portalAnnouncements'));
+  app.use('/portal', require('./routes/portalProfileChangeRequest'));
   app.use('/portal/staff', require('./routes/portalStaffEmailRequests'));
   app.use('/portal/staff', require('./routes/portalStaffNotifications'));
+  app.use('/portal/staff', require('./routes/portalStaffChangeRequests'));
   app.use('/portal/staff', require('./routes/portalStaffMembers'));
   app.use('/portal/staff', require('./routes/portalStaffLabels'));
   app.use('/api/health', require('./routes/api/health'));

@@ -1,0 +1,33 @@
+<section class="page-header">
+  <h1>Change Requests</h1>
+  <p>Pending member profile update requests.</p>
+</section>
+
+<% if (!requests || requests.length === 0) { %>
+  <p>No pending change requests.</p>
+<% } else { %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Submitted</th>
+        <th>Member</th>
+        <th>CID</th>
+        <th>Changes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% requests.forEach(function(request) { %>
+        <tr>
+          <td>
+            <a href="/portal/staff/change-requests/<%= request.id %>"><%= request.submittedAtFormatted %></a>
+          </td>
+          <td><%= request.memberName %></td>
+          <td><%= request.cid %></td>
+          <td><%= request.changesSummary %></td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+<% } %>
+
+<p><a href="/portal">Back to portal</a></p>

@@ -1,0 +1,83 @@
+<section class="page-header">
+  <h1>Change Request</h1>
+  <p>Status: <strong><%= request.status %></strong></p>
+</section>
+
+<% if (errors && errors.length) { %>
+  <div class="notice error">
+    <ul>
+      <% errors.forEach(function(err) { %>
+        <li><%= err %></li>
+      <% }); %>
+    </ul>
+  </div>
+<% } %>
+
+<section class="summary">
+  <h2>Member</h2>
+  <ul class="summary-list">
+    <li>Name: <%= memberName %></li>
+    <li>CID: <%= member.cid %></li>
+    <li>Department: <%= departments.find(function(d) { return String(d._id) === String(member.departmentId); }) ? departments.find(function(d) { return String(d._id) === String(member.departmentId); }).name : '—' %></li>
+    <li>Submitted: <%= submittedAtFormatted %></li>
+    <% if (request.reviewedAt) { %>
+      <li>Reviewed: <%= reviewedAtFormatted %></li>
+    <% } %>
+  </ul>
+</section>
+
+<section class="summary">
+  <h2>Requested Changes</h2>
+  <% if (!changeRows || changeRows.length === 0) { %>
+    <p>No changes recorded.</p>
+  <% } else { %>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Field</th>
+          <th>Current</th>
+          <th>Requested</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% changeRows.forEach(function(row) { %>
+          <tr>
+            <td><%= row.label %></td>
+            <td><%= row.current %></td>
+            <td><%= row.requested %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<% if (request.status === 'pending') { %>
+  <section class="summary">
+    <h2>Decision</h2>
+    <form method="post" action="/portal/staff/change-requests/<%= request._id %>/approve" class="form-card">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label>
+        Optional note
+        <textarea name="note" rows="3"></textarea>
+      </label>
+      <button type="submit">Approve</button>
+    </form>
+
+    <form method="post" action="/portal/staff/change-requests/<%= request._id %>/reject" class="form-card">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <label>
+        Optional note
+        <textarea name="note" rows="3"></textarea>
+      </label>
+      <button type="submit">Reject</button>
+    </form>
+  </section>
+<% } else if (request.note) { %>
+  <section class="summary">
+    <h2>Reviewer Note</h2>
+    <p><%= request.note %></p>
+  </section>
+<% } %>
+
+<p><a href="/portal/staff/change-requests">Back to change requests</a></p>

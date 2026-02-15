@@ -89,6 +89,29 @@ const logMemberUpdate = async ({ actorUser, memberId, before, after, ipAddress }
   });
 };
 
+const logMemberChangeRequestDecision = async ({ actorUser, memberId, requestId, decision, note, ipAddress }) => {
+  const actor = actorUser
+    ? {
+      id: actorUser.id || actorUser._id?.toString(),
+      email: actorUser.email,
+      role: actorUser.role
+    }
+    : null;
+
+  return logEvent({
+    action: `memberChangeRequest.${decision}`,
+    entityType: 'memberChangeRequest',
+    entityId: String(requestId),
+    actor,
+    metadata: {
+      memberId: String(memberId),
+      note: note || null
+    },
+    ipAddress
+  });
+};
+
 module.exports = {
-  logMemberUpdate
+  logMemberUpdate,
+  logMemberChangeRequestDecision
 };
