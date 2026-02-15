@@ -158,6 +158,37 @@ a {
   }
 }
 
+.status-pill {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #e2e8f0;
+  color: #1f2933;
+}
+
+.status-yes {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.status-maybe {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-no {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
 .detail-card {
   border: 1px solid var(--border);
   border-radius: 10px;

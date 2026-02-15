@@ -14,6 +14,9 @@
     <% if (hasPermission && hasPermission('resources.read')) { %>
       <li><a href="/portal/resources">Resources</a></li>
     <% } %>
+    <% if (hasPermission && hasPermission('events.read')) { %>
+      <li><a href="/portal/events">Events</a></li>
+    <% } %>
   </ul>
 </section>
 
@@ -53,6 +56,9 @@
       <% } %>
       <% if (hasPermission('resources.manage')) { %>
         <li><a href="/portal/staff/resources">Manage Resources</a></li>
+      <% } %>
+      <% if (hasPermission('events.manage')) { %>
+        <li><a href="/portal/staff/events">Manage Events</a></li>
       <% } %>
     </ul>
   </section>

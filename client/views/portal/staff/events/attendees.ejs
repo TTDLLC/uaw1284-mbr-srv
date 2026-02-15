@@ -1,0 +1,47 @@
+<section class="page-header">
+  <h1>Event Attendees</h1>
+  <p><%= event.title %></p>
+</section>
+
+<section class="detail-card">
+  <dl>
+    <dt>Yes</dt>
+    <dd><%= counts.yes %></dd>
+    <dt>Maybe</dt>
+    <dd><%= counts.maybe %></dd>
+    <dt>No</dt>
+    <dd><%= counts.no %></dd>
+    <dt>Capacity</dt>
+    <dd><%= capacity ? `${counts.yes} / ${capacity}` : 'No limit' %></dd>
+  </dl>
+</section>
+
+<section class="audit-table-section">
+  <table class="audit-table">
+    <thead>
+      <tr>
+        <th>Member</th>
+        <th>CID</th>
+        <th>Status</th>
+        <th>Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (attendees.length === 0) { %>
+        <tr>
+          <td colspan="4">No RSVPs yet.</td>
+        </tr>
+      <% } %>
+      <% attendees.forEach((attendee) => { %>
+        <tr>
+          <td><%= attendee.name %></td>
+          <td><%= attendee.cid %></td>
+          <td><span class="status-pill status-<%= attendee.status %>"><%= attendee.status %></span></td>
+          <td><%= attendee.comment || '—' %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
+
+<p><a href="/portal/staff/events">Back to Events</a></p>

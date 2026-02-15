@@ -1,0 +1,67 @@
+<section class="page-header">
+  <h1><%= event.title %></h1>
+  <% if (event.description) { %>
+    <p><%= event.description %></p>
+  <% } %>
+</section>
+
+<section class="detail-card">
+  <dl>
+    <dt>When</dt>
+    <dd><%= event.startAt ? new Date(event.startAt).toLocaleString() : '—' %></dd>
+    <% if (event.endAt) { %>
+      <dt>Ends</dt>
+      <dd><%= new Date(event.endAt).toLocaleString() %></dd>
+    <% } %>
+    <dt>Location</dt>
+    <dd><%= event.location || '—' %></dd>
+    <dt>Timezone</dt>
+    <dd><%= event.timezone || 'America/Detroit' %></dd>
+    <dt>Capacity</dt>
+    <dd>
+      <% if (event.capacity) { %>
+        <%= counts.yes %> / <%= event.capacity %> yes
+      <% } else { %>
+        No limit
+      <% } %>
+    </dd>
+    <dt>RSVP Deadline</dt>
+    <dd><%= event.rsvpDeadlineAt ? new Date(event.rsvpDeadlineAt).toLocaleString() : '—' %></dd>
+  </dl>
+</section>
+
+<section class="rsvp-panel">
+  <h2>Your RSVP</h2>
+  <% if (rsvp) { %>
+    <p>Current response: <span class="status-pill status-<%= rsvp.status %>"><%= rsvp.status %></span></p>
+  <% } else { %>
+    <p>No response yet.</p>
+  <% } %>
+
+  <% if (deadlinePassed) { %>
+    <p class="notice">The RSVP deadline has passed.</p>
+  <% } %>
+
+  <form method="post" action="/portal/events/<%= event._id %>/rsvp" class="form-card">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="form-row">
+      <label for="status">Response</label>
+      <select id="status" name="status">
+        <option value="yes" <%= rsvp?.status === 'yes' ? 'selected' : '' %> <%= capacityReached ? 'disabled' : '' %>>Yes</option>
+        <option value="maybe" <%= rsvp?.status === 'maybe' ? 'selected' : '' %>>Maybe</option>
+        <option value="no" <%= rsvp?.status === 'no' ? 'selected' : '' %>>No</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label for="comment">Comment (optional)</label>
+      <input id="comment" name="comment" type="text" value="<%= rsvp?.comment || '' %>">
+    </div>
+    <div class="form-actions">
+      <button type="submit" <%= deadlinePassed ? 'disabled' : '' %>>Submit RSVP</button>
+      <a href="/portal/events">Back to Events</a>
+    </div>
+    <% if (capacityReached) { %>
+      <p class="notice">Yes RSVPs have reached capacity. You can still RSVP Maybe or No.</p>
+    <% } %>
+  </form>
+</section>

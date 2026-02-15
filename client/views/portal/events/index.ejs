@@ -1,0 +1,43 @@
+<section class="page-header">
+  <h1>Events</h1>
+  <p>Upcoming meetings, trainings, and gatherings.</p>
+</section>
+
+<section class="audit-table-section">
+  <table class="audit-table">
+    <thead>
+      <tr>
+        <th>Event</th>
+        <th>When</th>
+        <th>Location</th>
+        <th>RSVP</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (events.length === 0) { %>
+        <tr>
+          <td colspan="5">No upcoming events available.</td>
+        </tr>
+      <% } %>
+      <% events.forEach((event) => { %>
+        <tr>
+          <td><%= event.title %></td>
+          <td><%= event.startAtFormatted %></td>
+          <td><%= event.location || '—' %></td>
+          <td>
+            <% if (event.rsvpStatus) { %>
+              <span class="status-pill status-<%= event.rsvpStatus %>"><%= event.rsvpStatus %></span>
+            <% } else { %>
+              —
+            <% } %>
+            <% if (event.capacity) { %>
+              <span class="muted">(<%= event.counts.yes %>/<%= event.capacity %> yes)</span>
+            <% } %>
+          </td>
+          <td><a href="/portal/events/<%= event.id %>">View</a></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</section>
