@@ -3,7 +3,8 @@ const express = require('express');
 const models = require('../models');
 const attachUser = require('../middleware/attachUser');
 const requireAuth = require('../middleware/requireAuth');
-const requireRole = require('../middleware/requireRole');
+const requirePermission = require('../middleware/requirePermission');
+const { PERMISSIONS } = require('../config/permissions');
 const { logAction } = require('../utils/audit');
 
 const router = express.Router();
@@ -15,7 +16,7 @@ const buildDisplayName = (member) => {
   return [member.firstName, member.lastName].filter(Boolean).join(' ').trim() || member.cid || 'Member';
 };
 
-router.get('/email-requests', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.get('/email-requests', attachUser, requireAuth, requirePermission(PERMISSIONS.EMAIL_REQUESTS_REVIEW), async (req, res, next) => {
   try {
     const pendingRequests = await models.EmailChangeRequest.find({ status: 'pending' })
       .sort({ requestedAt: -1 })
@@ -60,7 +61,7 @@ router.get('/email-requests', attachUser, requireAuth, requireRole('staff'), asy
   }
 });
 
-router.post('/email-requests/:id/approve', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.post('/email-requests/:id/approve', attachUser, requireAuth, requirePermission(PERMISSIONS.EMAIL_REQUESTS_REVIEW), async (req, res, next) => {
   try {
     const request = await models.EmailChangeRequest.findById(req.params.id);
     if (!request || request.status !== 'pending') {
@@ -115,7 +116,7 @@ router.post('/email-requests/:id/approve', attachUser, requireAuth, requireRole(
   }
 });
 
-router.post('/email-requests/:id/reject', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.post('/email-requests/:id/reject', attachUser, requireAuth, requirePermission(PERMISSIONS.EMAIL_REQUESTS_REVIEW), async (req, res, next) => {
   try {
     const request = await models.EmailChangeRequest.findById(req.params.id);
     if (!request || request.status !== 'pending') {

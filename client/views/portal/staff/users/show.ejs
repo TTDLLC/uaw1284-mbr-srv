@@ -1,0 +1,41 @@
+<section class="page-header">
+  <h1>User Role Detail</h1>
+  <p>Update a user role and permissions.</p>
+</section>
+
+<section class="detail-card">
+  <dl>
+    <dt>Name</dt>
+    <dd><%= [user.firstName, user.lastName].filter(Boolean).join(' ') || '—' %></dd>
+    <dt>Email</dt>
+    <dd><%= user.email %></dd>
+    <dt>Current Role</dt>
+    <dd><code><%= user.role %></code></dd>
+  </dl>
+</section>
+
+<section class="user-role-form">
+  <form method="post" action="/portal/staff/users/<%= user._id %>" class="form-card">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="form-row">
+      <label for="role">Role</label>
+      <select id="role" name="role">
+        <% roleOptions.forEach((role) => { %>
+          <option value="<%= role %>" <%= role === user.role ? 'selected' : '' %>>
+            <%= role %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button type="submit">Update Role</button>
+      <a href="/portal/staff/users">Back to Users</a>
+    </div>
+    <% if (errors && errors.length) { %>
+      <p class="notice"><%= errors.join(' ') %></p>
+    <% } %>
+    <% if (success) { %>
+      <p class="notice"><%= success %></p>
+    <% } %>
+  </form>
+</section>

@@ -73,7 +73,7 @@
       <% if (queryBase) { %>
         <a href="/portal/staff/audit">Reset</a>
       <% } %>
-      <% if (isAdmin) { %>
+      <% if (typeof hasPermission === 'function' && hasPermission('audit.export')) { %>
         <a href="/portal/staff/audit/export.csv<%= queryBase ? `?${queryBase}` : '' %>">Export CSV</a>
       <% } %>
     </div>

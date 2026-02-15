@@ -1,5 +1,7 @@
 const express = require('express');
-const { requireAuth, requireRole } = require('../middleware/auth');
+const { requireAuth } = require('../middleware/auth');
+const requirePermission = require('../middleware/requirePermission');
+const { PERMISSIONS } = require('../config/permissions');
 
 const router = express.Router();
 
@@ -17,7 +19,7 @@ router.get('/about', (req, res) => {
   });
 });
 
-router.get('/admin/audit', requireAuth, requireRole(['admin', 'staff']), (req, res) => {
+router.get('/admin/audit', requireAuth, requirePermission(PERMISSIONS.AUDIT_READ), (req, res) => {
   res.redirect('/portal/staff/audit');
 });
 

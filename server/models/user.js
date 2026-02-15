@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const roles = ['admin', 'staff', 'member', 'readOnly'];
+const roles = ['admin', 'staff', 'member', 'readOnly', 'rep', 'steward', 'officer', 'benefitsAdmin'];
 
 const userSchema = new mongoose.Schema({
   memberId: {
@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
   role: {
     type: String,
     enum: roles,
-    default: 'staff',
+    default: 'member',
     index: true
   },
   isActive: {
@@ -59,6 +59,10 @@ const userSchema = new mongoose.Schema({
     type: Map,
     of: mongoose.Schema.Types.Mixed,
     default: {}
+  },
+  permissions: {
+    type: [String],
+    default: []
   }
 }, {
   timestamps: true

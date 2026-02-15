@@ -3,7 +3,8 @@ const express = require('express');
 const models = require('../models');
 const attachUser = require('../middleware/attachUser');
 const requireAuth = require('../middleware/requireAuth');
-const requireRole = require('../middleware/requireRole');
+const requirePermission = require('../middleware/requirePermission');
+const { PERMISSIONS } = require('../config/permissions');
 const { logMemberUpdate, logMemberChangeRequestDecision } = require('../utils/audit');
 const { maskPhone } = require('../utils/phone');
 
@@ -104,7 +105,7 @@ const buildBeforeAfterSnapshots = (member, changes) => {
   return { before, after };
 };
 
-router.get('/change-requests', attachUser, requireAuth, requireRole('staff'), async (_req, res, next) => {
+router.get('/change-requests', attachUser, requireAuth, requirePermission(PERMISSIONS.CHANGE_REQUESTS_REVIEW), async (_req, res, next) => {
   try {
     const pendingRequests = await models.MemberChangeRequest.find({ status: 'pending' })
       .sort({ submittedAt: -1 })
@@ -157,7 +158,7 @@ router.get('/change-requests', attachUser, requireAuth, requireRole('staff'), as
   }
 });
 
-router.get('/change-requests/:id', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.get('/change-requests/:id', attachUser, requireAuth, requirePermission(PERMISSIONS.CHANGE_REQUESTS_REVIEW), async (req, res, next) => {
   try {
     const changeRequest = await models.MemberChangeRequest.findById(req.params.id).lean();
     if (!changeRequest) {
@@ -195,7 +196,7 @@ router.get('/change-requests/:id', attachUser, requireAuth, requireRole('staff')
   }
 });
 
-router.post('/change-requests/:id/approve', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.post('/change-requests/:id/approve', attachUser, requireAuth, requirePermission(PERMISSIONS.CHANGE_REQUESTS_REVIEW), async (req, res, next) => {
   try {
     const changeRequest = await models.MemberChangeRequest.findById(req.params.id);
     if (!changeRequest || changeRequest.status !== 'pending') {
@@ -279,7 +280,7 @@ router.post('/change-requests/:id/approve', attachUser, requireAuth, requireRole
   }
 });
 
-router.post('/change-requests/:id/reject', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.post('/change-requests/:id/reject', attachUser, requireAuth, requirePermission(PERMISSIONS.CHANGE_REQUESTS_REVIEW), async (req, res, next) => {
   try {
     const changeRequest = await models.MemberChangeRequest.findById(req.params.id);
     if (!changeRequest || changeRequest.status !== 'pending') {

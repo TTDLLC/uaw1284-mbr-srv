@@ -4,7 +4,8 @@ const { z } = require('zod');
 const models = require('../models');
 const attachUser = require('../middleware/attachUser');
 const requireAuth = require('../middleware/requireAuth');
-const requireRole = require('../middleware/requireRole');
+const requirePermission = require('../middleware/requirePermission');
+const { PERMISSIONS } = require('../config/permissions');
 const limiters = require('../middleware/limiters');
 const { enqueueNotificationSend } = require('../jobs/notificationSender');
 const { logAction } = require('../utils/audit');
@@ -117,7 +118,7 @@ const buildPreviewPayload = async ({ formData, user }) => {
   };
 };
 
-router.get('/notifications', attachUser, requireAuth, requireRole('staff'), async (_req, res, next) => {
+router.get('/notifications', attachUser, requireAuth, requirePermission(PERMISSIONS.NOTIFICATIONS_READ), async (_req, res, next) => {
   try {
     const notifications = await models.Notification.find({})
       .sort({ createdAt: -1 })
@@ -144,7 +145,7 @@ router.get('/notifications', attachUser, requireAuth, requireRole('staff'), asyn
   }
 });
 
-router.get('/notifications/new', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.get('/notifications/new', attachUser, requireAuth, requirePermission(PERMISSIONS.NOTIFICATIONS_SEND), async (req, res, next) => {
   try {
     const limiterMessage = req.session?.notificationLimiterMessage;
     if (req.session) {
@@ -180,7 +181,7 @@ router.post(
   '/notifications/preview',
   attachUser,
   requireAuth,
-  requireRole('staff'),
+  requirePermission(PERMISSIONS.NOTIFICATIONS_SEND),
   async (req, res, next) => {
     try {
       const parsed = notificationSchema.safeParse(req.body);
@@ -295,7 +296,7 @@ router.post(
   '/notifications',
   attachUser,
   requireAuth,
-  requireRole('staff'),
+  requirePermission(PERMISSIONS.NOTIFICATIONS_SEND),
   limiters.notificationCreate,
   async (req, res, next) => {
     try {
@@ -391,7 +392,7 @@ router.post(
   }
 );
 
-router.get('/notifications/:id', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.get('/notifications/:id', attachUser, requireAuth, requirePermission(PERMISSIONS.NOTIFICATIONS_READ), async (req, res, next) => {
   try {
     const notification = await models.Notification.findById(req.params.id).lean();
     if (!notification) {

@@ -1,4 +1,5 @@
 const models = require('../models');
+const { hasPermission } = require('../config/permissions');
 
 const destroySession = (req) => new Promise((resolve) => {
   if (!req?.session || typeof req.session.destroy !== 'function') {
@@ -47,6 +48,7 @@ async function attachUser(req, res, next) {
     req.member = member;
     res.locals.user = user;
     res.locals.member = member;
+    res.locals.hasPermission = (permission) => hasPermission(user, permission);
     return next();
   } catch (err) {
     return next(err);

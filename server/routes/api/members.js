@@ -2,7 +2,9 @@ const express = require('express');
 const { z } = require('zod');
 
 const limiters = require('../../middleware/limiters');
-const { requireAuth, requireRole } = require('../../middleware/auth');
+const { requireAuth } = require('../../middleware/auth');
+const requirePermission = require('../../middleware/requirePermission');
+const { PERMISSIONS } = require('../../config/permissions');
 const { validateBody } = require('../../middleware/validation');
 const Member = require('../../models/member');
 const { logAction } = require('../../utils/audit');
@@ -53,7 +55,7 @@ router.post(
   '/',
   limiters.adminAction,
   requireAuth,
-  requireRole(['admin', 'staff']),
+  requirePermission(PERMISSIONS.MEMBERS_WRITE),
   validateBody(createMemberSchema),
   async (req, res, next) => {
     try {
@@ -80,7 +82,7 @@ router.put(
   '/:memberId',
   limiters.adminAction,
   requireAuth,
-  requireRole(['admin', 'staff']),
+  requirePermission(PERMISSIONS.MEMBERS_WRITE),
   validateBody(updateMemberSchema),
   async (req, res, next) => {
     try {
@@ -114,7 +116,7 @@ router.delete(
   '/:memberId',
   limiters.adminAction,
   requireAuth,
-  requireRole(['admin']),
+  requirePermission(PERMISSIONS.MEMBERS_WRITE),
   async (req, res, next) => {
     try {
       const member = await Member.findById(req.params.memberId);
@@ -143,7 +145,7 @@ router.get(
   '/export',
   limiters.adminAction,
   requireAuth,
-  requireRole(['admin']),
+  requirePermission(PERMISSIONS.MEMBERS_READ),
   async (req, res, next) => {
     try {
       const filter = {};

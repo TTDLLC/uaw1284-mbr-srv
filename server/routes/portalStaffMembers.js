@@ -4,7 +4,8 @@ const { z } = require('zod');
 const models = require('../models');
 const attachUser = require('../middleware/attachUser');
 const requireAuth = require('../middleware/requireAuth');
-const requireRole = require('../middleware/requireRole');
+const requirePermission = require('../middleware/requirePermission');
+const { PERMISSIONS } = require('../config/permissions');
 const { logMemberUpdate } = require('../utils/audit');
 
 const router = express.Router();
@@ -42,7 +43,7 @@ const memberUpdateSchema = z.object({
   status: z.enum(['active', 'inactive', 'retired', 'left', 'pending'])
 });
 
-router.get('/members', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.get('/members', attachUser, requireAuth, requirePermission(PERMISSIONS.MEMBERS_READ), async (req, res, next) => {
   try {
     const q = String(req.query.q || '').trim();
     const department = String(req.query.department || '').trim();
@@ -87,7 +88,7 @@ router.get('/members', attachUser, requireAuth, requireRole('staff'), async (req
   }
 });
 
-router.get('/members/:id', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.get('/members/:id', attachUser, requireAuth, requirePermission(PERMISSIONS.MEMBERS_READ), async (req, res, next) => {
   try {
     const member = await models.Member.findById(req.params.id).lean();
     if (!member) {
@@ -121,7 +122,7 @@ router.get('/members/:id', attachUser, requireAuth, requireRole('staff'), async 
   }
 });
 
-router.post('/members/:id', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.post('/members/:id', attachUser, requireAuth, requirePermission(PERMISSIONS.MEMBERS_WRITE), async (req, res, next) => {
   try {
     const member = await models.Member.findById(req.params.id);
     if (!member) {

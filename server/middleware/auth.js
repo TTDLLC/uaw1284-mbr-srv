@@ -1,15 +1,25 @@
+const { hasPermission } = require('../config/permissions');
+
 const roles = Object.freeze({
   admin: 'admin',
   member: 'member',
   readOnly: 'readOnly',
-  staff: 'staff'
+  staff: 'staff',
+  rep: 'rep',
+  steward: 'steward',
+  officer: 'officer',
+  benefitsAdmin: 'benefitsAdmin'
 });
 
 const roleHierarchy = Object.freeze({
   readOnly: 0,
   member: 1,
-  staff: 2,
-  admin: 3
+  rep: 2,
+  steward: 2,
+  officer: 2,
+  benefitsAdmin: 2,
+  staff: 3,
+  admin: 4
 });
 
 function wantsJson(req) {
@@ -67,15 +77,18 @@ function requireRole(requiredRoles) {
 
 function attachCurrentUser(req, res, next) {
   const sessionUser = req.session?.user || null;
+  const resolvedUser = req.user || sessionUser || null;
   if (sessionUser && !req.user) {
     req.user = sessionUser;
   }
   res.locals.currentUser = sessionUser;
+  res.locals.hasPermission = (permission) => hasPermission(resolvedUser, permission);
   next();
 }
 
 module.exports = {
   attachCurrentUser,
+  hasPermission,
   requireAuth,
   requireRole,
   roles

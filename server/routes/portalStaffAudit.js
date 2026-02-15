@@ -5,7 +5,8 @@ const models = require('../models');
 const AuditLog = require('../models/auditLog');
 const attachUser = require('../middleware/attachUser');
 const requireAuth = require('../middleware/requireAuth');
-const requireRole = require('../middleware/requireRole');
+const requirePermission = require('../middleware/requirePermission');
+const { PERMISSIONS } = require('../config/permissions');
 const { maskMetadataValue } = require('../utils/audit');
 
 const router = express.Router();
@@ -169,7 +170,7 @@ const buildActorLabel = (user) => {
   return user.email || 'Unknown user';
 };
 
-router.get('/audit', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.get('/audit', attachUser, requireAuth, requirePermission(PERMISSIONS.AUDIT_READ), async (req, res, next) => {
   try {
     const page = parsePage(req.query.page);
     const {
@@ -287,7 +288,6 @@ router.get('/audit', attachUser, requireAuth, requireRole('staff'), async (req, 
       target,
       actionOptions,
       actors,
-      isAdmin: req.user?.role === 'admin',
       queryBase
     });
   } catch (err) {
@@ -295,7 +295,7 @@ router.get('/audit', attachUser, requireAuth, requireRole('staff'), async (req, 
   }
 });
 
-router.get('/audit/export.csv', attachUser, requireAuth, requireRole('admin'), async (req, res, next) => {
+router.get('/audit/export.csv', attachUser, requireAuth, requirePermission(PERMISSIONS.AUDIT_EXPORT), async (req, res, next) => {
   try {
     const {
       filter,
@@ -367,7 +367,7 @@ router.get('/audit/export.csv', attachUser, requireAuth, requireRole('admin'), a
   }
 });
 
-router.get('/audit/:id', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.get('/audit/:id', attachUser, requireAuth, requirePermission(PERMISSIONS.AUDIT_READ), async (req, res, next) => {
   try {
     const log = await AuditLog.findById(req.params.id)
       .populate('actorUserId', 'firstName lastName email role')

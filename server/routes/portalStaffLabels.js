@@ -4,7 +4,8 @@ const { z } = require('zod');
 const models = require('../models');
 const attachUser = require('../middleware/attachUser');
 const requireAuth = require('../middleware/requireAuth');
-const requireRole = require('../middleware/requireRole');
+const requirePermission = require('../middleware/requirePermission');
+const { PERMISSIONS } = require('../config/permissions');
 const { logAction } = require('../utils/audit');
 
 const router = express.Router();
@@ -17,7 +18,7 @@ const labelSchema = z.object({
 
 const parseActive = (value) => value === 'on' || value === 'true' || value === '1';
 
-router.get('/labels', attachUser, requireAuth, requireRole('staff'), async (_req, res, next) => {
+router.get('/labels', attachUser, requireAuth, requirePermission(PERMISSIONS.LABELS_MANAGE), async (_req, res, next) => {
   try {
     const labels = await models.Label.find({})
       .sort({ name: 1 })
@@ -33,7 +34,7 @@ router.get('/labels', attachUser, requireAuth, requireRole('staff'), async (_req
   }
 });
 
-router.get('/labels/new', attachUser, requireAuth, requireRole('staff'), (_req, res) => {
+router.get('/labels/new', attachUser, requireAuth, requirePermission(PERMISSIONS.LABELS_MANAGE), (_req, res) => {
   res.render('portal/staff/labels/new', {
     title: 'New Label',
     layout: 'layout',
@@ -42,7 +43,7 @@ router.get('/labels/new', attachUser, requireAuth, requireRole('staff'), (_req, 
   });
 });
 
-router.post('/labels', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.post('/labels', attachUser, requireAuth, requirePermission(PERMISSIONS.LABELS_MANAGE), async (req, res, next) => {
   try {
     const parsed = labelSchema.safeParse(req.body);
     if (!parsed.success) {
@@ -95,7 +96,7 @@ router.post('/labels', attachUser, requireAuth, requireRole('staff'), async (req
   }
 });
 
-router.get('/labels/:id/edit', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.get('/labels/:id/edit', attachUser, requireAuth, requirePermission(PERMISSIONS.LABELS_MANAGE), async (req, res, next) => {
   try {
     const label = await models.Label.findById(req.params.id).lean();
     if (!label) {
@@ -113,7 +114,7 @@ router.get('/labels/:id/edit', attachUser, requireAuth, requireRole('staff'), as
   }
 });
 
-router.post('/labels/:id', attachUser, requireAuth, requireRole('staff'), async (req, res, next) => {
+router.post('/labels/:id', attachUser, requireAuth, requirePermission(PERMISSIONS.LABELS_MANAGE), async (req, res, next) => {
   try {
     const label = await models.Label.findById(req.params.id);
     if (!label) {
