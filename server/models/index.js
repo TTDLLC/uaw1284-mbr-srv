@@ -11,5 +11,6 @@ module.exports = {
   NotificationRecipient: require('./notificationRecipient'),
   PasswordResetToken: require('./passwordResetToken'),
   PhoneVerification: require('./phoneVerification'),
+  Resource: require('./resource'),
   User: require('./user')
 };

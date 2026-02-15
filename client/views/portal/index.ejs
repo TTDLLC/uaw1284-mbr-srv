@@ -11,6 +11,9 @@
     <li><a href="/request-email">Request Email Access</a></li>
     <li><a href="/portal/profile/change-request">Request Profile Update</a></li>
     <li><a href="/portal/announcements">Announcements</a></li>
+    <% if (hasPermission && hasPermission('resources.read')) { %>
+      <li><a href="/portal/resources">Resources</a></li>
+    <% } %>
   </ul>
 </section>
 
@@ -47,6 +50,9 @@
       <% } %>
       <% if (hasPermission('audit.read')) { %>
         <li><a href="/portal/staff/audit">Audit Log</a></li>
+      <% } %>
+      <% if (hasPermission('resources.manage')) { %>
+        <li><a href="/portal/staff/resources">Manage Resources</a></li>
       <% } %>
     </ul>
   </section>

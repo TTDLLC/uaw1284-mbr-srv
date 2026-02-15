@@ -1,0 +1,83 @@
+<section class="page-header">
+  <h1>New Resource</h1>
+  <p>Create a link or file resource for members.</p>
+</section>
+
+<form method="post" action="/portal/staff/resources" class="form-card" enctype="multipart/form-data">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="form-row">
+    <label for="title">Title</label>
+    <input id="title" name="title" type="text" value="<%= form.title %>">
+  </div>
+
+  <div class="form-row">
+    <label for="description">Description</label>
+    <input id="description" name="description" type="text" value="<%= form.description %>">
+  </div>
+
+  <div class="form-row">
+    <label for="type">Type</label>
+    <select id="type" name="type">
+      <option value="link" <%= form.type === 'link' ? 'selected' : '' %>>Link</option>
+      <option value="file" <%= form.type === 'file' ? 'selected' : '' %>>File</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="url">URL (links only)</label>
+    <input id="url" name="url" type="text" value="<%= form.url %>">
+  </div>
+
+  <div class="form-row">
+    <label for="file">Upload file (files only)</label>
+    <input id="file" name="file" type="file">
+  </div>
+
+  <div class="form-row">
+    <label for="scope">Audience Scope</label>
+    <select id="scope" name="scope">
+      <option value="all" <%= form.scope === 'all' ? 'selected' : '' %>>All members</option>
+      <option value="departments" <%= form.scope === 'departments' ? 'selected' : '' %>>Departments</option>
+      <option value="labels" <%= form.scope === 'labels' ? 'selected' : '' %>>Labels</option>
+      <option value="mixed" <%= form.scope === 'mixed' ? 'selected' : '' %>>Departments or Labels</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="departmentIds">Departments</label>
+    <select id="departmentIds" name="departmentIds" multiple>
+      <% departments.forEach((department) => { %>
+        <option value="<%= department._id %>" <%= form.departmentIds.includes(String(department._id)) ? 'selected' : '' %>>
+          <%= department.name %>
+        </option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="labelIds">Labels</label>
+    <select id="labelIds" name="labelIds" multiple>
+      <% labels.forEach((label) => { %>
+        <option value="<%= label._id %>" <%= form.labelIds.includes(String(label._id)) ? 'selected' : '' %>>
+          <%= label.name %>
+        </option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label>
+      <input type="checkbox" name="active" <%= form.active ? 'checked' : '' %>>
+      Active
+    </label>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit">Create Resource</button>
+    <a href="/portal/staff/resources">Cancel</a>
+  </div>
+
+  <% if (errors.length) { %>
+    <p class="notice"><%= errors.join(' ') %></p>
+  <% } %>
+</form>

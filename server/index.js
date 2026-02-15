@@ -197,6 +197,7 @@ async function start() {
   app.use('/portal', require('./routes/portal'));
   app.use('/portal', require('./routes/portalAnnouncements'));
   app.use('/portal', require('./routes/portalProfileChangeRequest'));
+  app.use('/portal', require('./routes/portalResources'));
   app.use('/portal/staff', require('./routes/portalStaffEmailRequests'));
   app.use('/portal/staff', require('./routes/portalStaffNotifications'));
   app.use('/portal/staff', require('./routes/portalStaffChangeRequests'));
@@ -204,6 +205,7 @@ async function start() {
   app.use('/portal/staff', require('./routes/portalStaffLabels'));
   app.use('/portal/staff', require('./routes/portalStaffAudit'));
   app.use('/portal/staff', require('./routes/portalStaffUsers'));
+  app.use('/portal/staff', require('./routes/portalStaffResources'));
   app.use('/api/health', require('./routes/api/health'));
   app.get('/api/metrics', metricsHandler);
   app.use('/api/auth', require('./routes/api/auth'));

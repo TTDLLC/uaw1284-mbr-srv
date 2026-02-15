@@ -119,6 +119,10 @@ a {
       border: 1px solid var(--border);
       background: #fff;
     }
+
+    select[multiple] {
+      min-height: 120px;
+    }
   }
 
   .form-actions {
@@ -139,6 +143,18 @@ a {
     a {
       font-weight: 600;
     }
+  }
+}
+
+.resource-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  a {
+    font-weight: 600;
   }
 }
 

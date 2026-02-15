@@ -4,3 +4,4 @@ npm-debug.log*
 .cspell
 logs/
 __updates__
+server/uploads/

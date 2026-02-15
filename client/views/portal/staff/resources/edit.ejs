@@ -1,0 +1,90 @@
+<section class="page-header">
+  <h1>Edit Resource</h1>
+  <p>Update resource metadata and audience rules.</p>
+</section>
+
+<form method="post" action="/portal/staff/resources/<%= resource._id %>" class="form-card">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <div class="form-row">
+    <label for="title">Title</label>
+    <input id="title" name="title" type="text" value="<%= resource.title %>">
+  </div>
+
+  <div class="form-row">
+    <label for="description">Description</label>
+    <input id="description" name="description" type="text" value="<%= resource.description || '' %>">
+  </div>
+
+  <div class="form-row">
+    <label>Type</label>
+    <p><code><%= resource.type %></code></p>
+  </div>
+
+  <% if (resource.type === 'link') { %>
+    <div class="form-row">
+      <label for="url">URL</label>
+      <input id="url" name="url" type="text" value="<%= resource.url || '' %>">
+    </div>
+  <% } else { %>
+    <div class="form-row">
+      <label>File</label>
+      <p><%= resource.file?.originalName || 'File upload' %></p>
+    </div>
+  <% } %>
+
+  <div class="form-row">
+    <label for="scope">Audience Scope</label>
+    <select id="scope" name="scope">
+      <option value="all" <%= resource.audience?.scope === 'all' ? 'selected' : '' %>>All members</option>
+      <option value="departments" <%= resource.audience?.scope === 'departments' ? 'selected' : '' %>>Departments</option>
+      <option value="labels" <%= resource.audience?.scope === 'labels' ? 'selected' : '' %>>Labels</option>
+      <option value="mixed" <%= resource.audience?.scope === 'mixed' ? 'selected' : '' %>>Departments or Labels</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="departmentIds">Departments</label>
+    <select id="departmentIds" name="departmentIds" multiple>
+      <% departments.forEach((department) => { %>
+        <option value="<%= department._id %>" <%= resource.audience?.departmentIds?.some((id) => String(id) === String(department._id)) ? 'selected' : '' %>>
+          <%= department.name %>
+        </option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="labelIds">Labels</label>
+    <select id="labelIds" name="labelIds" multiple>
+      <% labels.forEach((label) => { %>
+        <option value="<%= label._id %>" <%= resource.audience?.labelIds?.some((id) => String(id) === String(label._id)) ? 'selected' : '' %>>
+          <%= label.name %>
+        </option>
+      <% }) %>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label>
+      <input type="checkbox" name="active" <%= resource.active !== false ? 'checked' : '' %>>
+      Active
+    </label>
+  </div>
+
+  <div class="form-actions">
+    <button type="submit">Save Changes</button>
+    <a href="/portal/staff/resources">Back to Resources</a>
+  </div>
+
+  <% if (errors.length) { %>
+    <p class="notice"><%= errors.join(' ') %></p>
+  <% } %>
+  <% if (success) { %>
+    <p class="notice"><%= success %></p>
+  <% } %>
+</form>
+
+<form method="post" action="/portal/staff/resources/<%= resource._id %>/archive" class="inline-form">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <button type="submit">Archive Resource</button>
+</form>

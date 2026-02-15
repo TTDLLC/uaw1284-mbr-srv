@@ -1,0 +1,24 @@
+<section class="page-header">
+  <h1><%= resource.title %></h1>
+  <% if (resource.description) { %>
+    <p><%= resource.description %></p>
+  <% } %>
+</section>
+
+<section class="detail-card">
+  <dl>
+    <dt>Type</dt>
+    <dd><code><%= resource.type %></code></dd>
+    <dt>Added</dt>
+    <dd><%= resource.createdAt ? new Date(resource.createdAt).toLocaleDateString() : '—' %></dd>
+  </dl>
+</section>
+
+<section class="resource-actions">
+  <% if (resource.type === 'link') { %>
+    <a href="<%= resource.url %>" target="_blank" rel="noopener">Open Link</a>
+  <% } else { %>
+    <a href="/portal/resources/<%= resource._id %>/download">Download File</a>
+  <% } %>
+  <a href="/portal/resources">Back to Resources</a>
+</section>
