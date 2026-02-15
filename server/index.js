@@ -10,6 +10,7 @@ const MongoStore = require('connect-mongo');
 const config = require('./config');
 require('./models');
 const { requestId, notFound, errorHandler } = require('./middleware');
+const requestLogger = require('./middleware/requestLogger');
 const limiters = require('./middleware/limiters');
 const { assertSessionCookieSecurity } = require('./middleware/session');
 const { protectRoutes: csrfProtection, attachCsrfTokenToLocals } = require('./middleware/csrf');
@@ -63,6 +64,7 @@ async function start() {
 
   app.use(requestId);
   app.use(metricsMiddleware);
+  app.use(requestLogger);
   app.use(pinoHttp({
     logger: httpLogger,
     genReqId: (req) => req.id,
@@ -172,6 +174,17 @@ async function start() {
   assertSessionCookieSecurity(sessionOptions.cookie, { isProd: config.isProd });
   app.use(session(sessionOptions));
   app.use(attachCurrentUser);
+
+  app.get('/healthz', (req, res) => res.status(200).json({ ok: true, requestId: req.id }));
+  app.get('/readyz', (req, res) => {
+    const ready = mongoose.connection.readyState === 1;
+    const status = ready ? 'ready' : 'not_ready';
+    return res.status(ready ? 200 : 503).json({
+      ok: ready,
+      status,
+      requestId: req.id
+    });
+  });
 
   app.use(express.json({ limit: config.limits.jsonBody }));
   app.use(express.urlencoded({ extended: true, limit: config.limits.urlencodedBody }));

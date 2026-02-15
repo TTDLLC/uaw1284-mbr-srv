@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const attachUser = require('../middleware/attachUser');
 const requireAuth = require('../middleware/requireAuth');
 const requirePermission = require('../middleware/requirePermission');
+const limiters = require('../middleware/limiters');
 const { PERMISSIONS, hasPermission } = require('../config/permissions');
 const models = require('../models');
 const { logAction } = require('../utils/audit');
@@ -152,7 +153,7 @@ router.get('/resources/:id', attachUser, requireAuth, requirePermission(PERMISSI
   }
 });
 
-router.get('/resources/:id/download', attachUser, requireAuth, requirePermission(PERMISSIONS.RESOURCES_READ), async (req, res, next) => {
+router.get('/resources/:id/download', attachUser, requireAuth, requirePermission(PERMISSIONS.RESOURCES_READ), limiters.resourceDownload, async (req, res, next) => {
   try {
     if (!mongoose.isValidObjectId(req.params.id)) {
       return res.status(404).render('404', { title: 'Not Found', layout: 'layout', requestId: req.id });

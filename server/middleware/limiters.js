@@ -83,6 +83,11 @@ const limiters = {
   adminAction: buildLimiter({
     ...config.security.rateLimits.adminAction,
     message: 'Rate limit exceeded for admin actions.'
+  }),
+  resourceDownload: buildLimiter({
+    windowMs: 10 * 60 * 1000,
+    max: 60,
+    message: 'Too many download attempts. Please try again later.'
   })
 };
 

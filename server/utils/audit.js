@@ -144,6 +144,13 @@ const logAction = async ({ actorUserId, action, targetType, targetId, metadata, 
     throw new Error(`Audit log requires actorUserId for action "${action}".`);
   }
 
+  if (req) {
+    if (!Array.isArray(req.auditActions)) {
+      req.auditActions = [];
+    }
+    req.auditActions.push(action);
+  }
+
   const ipAddress = req?.ip || null;
   const userAgent = req?.get?.('user-agent') || null;
 
