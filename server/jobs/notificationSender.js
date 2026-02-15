@@ -92,9 +92,15 @@ const runNotification = async (notificationId) => {
     }
   }
 
+  const notification = await models.Notification.findById(notificationId).lean();
+  const completionUpdate = { status: 'completed' };
+  if (notification?.isAnnouncement && !notification?.publishedAt) {
+    completionUpdate.publishedAt = new Date();
+  }
+
   await models.Notification.updateOne(
     { _id: notificationId, status: 'sending' },
-    { $set: { status: 'completed' } }
+    { $set: completionUpdate }
   );
 };
 

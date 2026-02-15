@@ -28,6 +28,7 @@
           .join(', ') || '—' %>
       </li>
     <% } %>
+    <li>Publish to announcements: <%= form.isAnnouncement ? 'Yes' : 'No' %></li>
     <li>Total targeted: <%= counts.totalTargeted %></li>
     <li>Email eligible: <%= counts.emailEligible %></li>
     <li>SMS eligible: <%= counts.smsEligible %></li>

@@ -19,6 +19,10 @@
     <li>SMS eligible: <%= notification.smsEligible || 0 %></li>
     <li>Sent: <%= notification.sent || 0 %></li>
     <li>Failed: <%= notification.failed || 0 %></li>
+    <li>Announcement: <%= notification.isAnnouncement ? 'Yes' : 'No' %></li>
+    <% if (notification.isAnnouncement) { %>
+      <li>Published at: <%= notification.publishedAt ? new Date(notification.publishedAt).toLocaleString() : 'Pending' %></li>
+    <% } %>
   </ul>
 </section>
 

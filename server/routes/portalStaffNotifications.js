@@ -17,7 +17,8 @@ const notificationSchema = z.object({
   labelIds: z.array(z.string()).optional().default([]),
   subject: z.string().optional(),
   body: z.string().min(1, 'Message body is required.'),
-  isTestSend: z.string().optional()
+  isTestSend: z.string().optional(),
+  isAnnouncement: z.string().optional()
 });
 
 const ensureSubject = (channel, subject) => {
@@ -38,6 +39,8 @@ const normalizeDepartmentIds = (value) => {
   return Array.isArray(value) ? value : [value];
 };
 
+const normalizeCheckbox = (value) => value === true || value === '1' || value === 'true';
+
 const buildFormData = (body, defaults = {}) => ({
   channel: body?.channel || defaults.channel || 'email',
   audienceType: body?.audienceType || defaults.audienceType || 'all',
@@ -45,7 +48,8 @@ const buildFormData = (body, defaults = {}) => ({
   labelIds: normalizeDepartmentIds(body?.labelIds || defaults.labelIds || []),
   subject: body?.subject || defaults.subject || '',
   body: body?.body || defaults.body || '',
-  isTestSend: body?.isTestSend || defaults.isTestSend || ''
+  isTestSend: normalizeCheckbox(body?.isTestSend || defaults.isTestSend),
+  isAnnouncement: normalizeCheckbox(body?.isAnnouncement ?? defaults.isAnnouncement)
 });
 
 const normalizePreviewSession = (req) => {
@@ -153,7 +157,16 @@ router.get('/notifications/new', attachUser, requireAuth, requireRole('staff'), 
       title: 'Compose Notification',
       layout: 'layout',
       errors: limiterMessage ? [limiterMessage] : [],
-      form: previewForm || { channel: 'email', audienceType: 'all', departmentIds: [], labelIds: [], subject: '', body: '', isTestSend: '' },
+      form: previewForm || {
+        channel: 'email',
+        audienceType: 'all',
+        departmentIds: [],
+        labelIds: [],
+        subject: '',
+        body: '',
+        isTestSend: false,
+        isAnnouncement: false
+      },
       departments,
       labels
     });
@@ -242,8 +255,17 @@ router.post(
 
       const preview = await buildPreviewPayload({ formData: { ...formData, labelIds: selectedLabelIds }, user: req.user });
 
+      const previewFormData = {
+        ...formData,
+        labelIds: selectedLabelIds
+      };
+
+      if (isTestSendSelected(previewFormData)) {
+        previewFormData.isAnnouncement = false;
+      }
+
       req.session.notificationPreview = {
-        formData: { ...formData, labelIds: selectedLabelIds },
+        formData: previewFormData,
         counts: {
           totalTargeted: preview.totalTargeted,
           emailEligible: preview.emailEligible,
@@ -288,6 +310,7 @@ router.post(
       const departmentIds = toDepartmentIds(formData.departmentIds || []);
       const labelIds = toDepartmentIds(formData.labelIds || []);
       const channel = formData.channel;
+      const isAnnouncement = Boolean(formData.isAnnouncement) && !isTestSend;
       const audienceType = isTestSend ? 'test' : formData.audienceType;
 
       const notification = await models.Notification.create({
@@ -303,7 +326,8 @@ router.post(
         emailEligible: counts.emailEligible,
         smsEligible: counts.smsEligible,
         sent: 0,
-        failed: 0
+        failed: 0,
+        isAnnouncement
       });
 
       const recipients = [];

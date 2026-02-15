@@ -1,0 +1,25 @@
+<section class="page-header">
+  <h1>Announcements</h1>
+  <p>Latest updates from UAW Local 1284.</p>
+</section>
+
+<% if (!announcements || announcements.length === 0) { %>
+  <p>No announcements available yet.</p>
+<% } else { %>
+  <ul class="announcement-list">
+    <% announcements.forEach(function(item) { %>
+      <li class="announcement-item">
+        <div class="announcement-header">
+          <a href="/portal/announcements/<%= item.id %>"><strong><%= item.title %></strong></a>
+          <% if (item.isUnread) { %>
+            <span class="badge">Unread</span>
+          <% } %>
+        </div>
+        <div class="announcement-meta"><%= item.publishedAtFormatted %></div>
+        <p class="announcement-preview"><%= item.preview %></p>
+      </li>
+    <% }); %>
+  </ul>
+<% } %>
+
+<p><a href="/portal">Back to portal</a></p>

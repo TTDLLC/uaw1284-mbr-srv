@@ -195,6 +195,7 @@ async function start() {
   app.use('/', require('./routes/authMagic'));
   app.use('/register', require('./routes/registerPhone'));
   app.use('/portal', require('./routes/portal'));
+  app.use('/portal', require('./routes/portalAnnouncements'));
   app.use('/portal/staff', require('./routes/portalStaffEmailRequests'));
   app.use('/portal/staff', require('./routes/portalStaffNotifications'));
   app.use('/portal/staff', require('./routes/portalStaffMembers'));

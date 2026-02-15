@@ -1,0 +1,20 @@
+<section class="page-header">
+  <h1><%= title %></h1>
+  <p><%= publishedAtFormatted %></p>
+</section>
+
+<section class="summary">
+  <h2>Announcement</h2>
+  <pre><%= announcement.body %></pre>
+</section>
+
+<% if (isUnread) { %>
+  <form method="post" action="/portal/announcements/<%= announcement._id %>/read" class="inline-form">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit">Mark as read</button>
+  </form>
+<% } else { %>
+  <p class="notice">Marked as read.</p>
+<% } %>
+
+<p><a href="/portal/announcements">Back to announcements</a></p>

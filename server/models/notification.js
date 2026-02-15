@@ -39,6 +39,14 @@ const notificationSchema = new mongoose.Schema({
     default: 'draft',
     index: true
   },
+  isAnnouncement: {
+    type: Boolean,
+    default: false
+  },
+  publishedAt: {
+    type: Date,
+    default: null
+  },
   totalTargeted: {
     type: Number,
     default: 0
