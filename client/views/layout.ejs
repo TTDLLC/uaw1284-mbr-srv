@@ -12,7 +12,7 @@
       <a href="/" class="brand">UAW Local 1284</a>
       <a href="/about">About</a>
       <% if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'staff')) { %>
-        <a href="/admin/audit">Audit Log</a>
+        <a href="/portal/staff/audit">Audit Log</a>
       <% } %>
       <a href="/api/health" target="_blank" rel="noopener">Health</a>
     </nav>

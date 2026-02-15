@@ -6,6 +6,7 @@ const config = require('../config');
 const models = require('../models');
 const limiters = require('../middleware/limiters');
 const { sendMagicLinkEmail } = require('../services/emailService');
+const { logAction } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -56,6 +57,15 @@ router.post('/login', limiters.login, async (req, res, next) => {
       }
 
       if (user.isActive !== false) {
+        await logAction({
+          actorUserId: user._id,
+          action: 'login.magic.request',
+          targetType: 'user',
+          targetId: user._id,
+          metadata: { email },
+          req
+        });
+
         const token = crypto.randomBytes(32).toString('base64url');
         const tokenHash = hashToken(token);
         const expiresAt = new Date(Date.now() + 20 * 60 * 1000);
@@ -131,6 +141,15 @@ router.get('/auth/magic', async (req, res, next) => {
 
     user.lastLoginAt = now;
     await user.save();
+
+    await logAction({
+      actorUserId: user._id,
+      action: 'login.magic.consume',
+      targetType: 'user',
+      targetId: user._id,
+      metadata: { method: 'magic' },
+      req
+    });
 
     const displayName = member
       ? [member.firstName, member.lastName].filter(Boolean).join(' ')

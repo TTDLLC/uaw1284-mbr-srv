@@ -216,7 +216,7 @@ router.post('/members/:id', attachUser, requireAuth, requireRole('staff'), async
       memberId: member._id,
       before,
       after,
-      ipAddress: req.ip
+      req
     });
 
     const departments = await models.Department.find({ active: true })

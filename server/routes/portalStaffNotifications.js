@@ -7,6 +7,7 @@ const requireAuth = require('../middleware/requireAuth');
 const requireRole = require('../middleware/requireRole');
 const limiters = require('../middleware/limiters');
 const { enqueueNotificationSend } = require('../jobs/notificationSender');
+const { logAction } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -328,6 +329,22 @@ router.post(
         sent: 0,
         failed: 0,
         isAnnouncement
+      });
+
+      await logAction({
+        actorUserId: req.user || req.session?.user,
+        action: isTestSend ? 'notification.testSend' : 'notification.send',
+        targetType: 'notification',
+        targetId: notification._id,
+        metadata: {
+          channel,
+          audienceType,
+          totalTargeted: counts.totalTargeted,
+          emailEligible: counts.emailEligible,
+          smsEligible: counts.smsEligible,
+          isAnnouncement
+        },
+        req
       });
 
       const recipients = [];

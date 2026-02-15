@@ -8,7 +8,7 @@ const config = require('../config');
 const logger = require('../logger');
 const models = require('../models');
 const { hashPassword, validatePasswordStrength } = require('../services/passwords');
-const { logEvent } = require('../services/auditTrail');
+const { logAction } = require('../utils/audit');
 
 const EXIT_VALIDATION = 1;
 const EXIT_UNEXPECTED = 2;
@@ -134,12 +134,12 @@ async function run() {
       await existingUser.save();
 
       try {
-        await logEvent({
+        await logAction({
+          actorUserId: existingUser._id,
           action: 'admin.bootstrap.updated',
-          entityType: 'user',
-          entityId: existingUser.id,
-          actor: { id: 'system', email: 'system', role: 'system' },
-          metadata: { updates }
+          targetType: 'user',
+          targetId: existingUser._id,
+          metadata: { updates, actor: 'system' }
         });
       } catch (err) {
         logger.warn({ err }, 'Failed to write admin bootstrap audit log');
@@ -186,11 +186,12 @@ async function run() {
     });
 
     try {
-      await logEvent({
+      await logAction({
+        actorUserId: user._id,
         action: 'admin.bootstrap.created',
-        entityType: 'user',
-        entityId: user.id,
-        actor: { id: 'system', email: 'system', role: 'system' }
+        targetType: 'user',
+        targetId: user._id,
+        metadata: { actor: 'system' }
       });
     } catch (err) {
       logger.warn({ err }, 'Failed to write admin bootstrap audit log');

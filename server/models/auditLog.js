@@ -1,47 +1,57 @@
 const mongoose = require('mongoose');
 
 const auditLogSchema = new mongoose.Schema({
-  actor: {
-    id: { type: String, trim: true },
-    email: { type: String, trim: true, lowercase: true },
-    role: { type: String, trim: true }
+  actorUserId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   action: {
     type: String,
     required: true,
     trim: true
   },
-  entityType: {
+  targetType: {
     type: String,
-    required: true,
     trim: true
   },
-  entityId: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  before: {
-    type: mongoose.Schema.Types.Mixed
-  },
-  after: {
-    type: mongoose.Schema.Types.Mixed
+  targetId: {
+    type: mongoose.Schema.Types.ObjectId
   },
   metadata: {
-    type: Map,
-    of: mongoose.Schema.Types.Mixed,
-    default: {}
+    type: mongoose.Schema.Types.Mixed
   },
   ipAddress: {
     type: String,
     trim: true
+  },
+  userAgent: {
+    type: String,
+    trim: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+    immutable: true
   }
 }, {
   timestamps: { createdAt: true, updatedAt: false }
 });
 
-auditLogSchema.index({ entityType: 1, entityId: 1, createdAt: -1 });
-auditLogSchema.index({ 'actor.id': 1, createdAt: -1 });
+const blockMutation = function (next) {
+  next(new Error('Audit logs are append-only.'));
+};
+
+auditLogSchema.pre('updateOne', blockMutation);
+auditLogSchema.pre('updateMany', blockMutation);
+auditLogSchema.pre('findOneAndUpdate', blockMutation);
+auditLogSchema.pre('deleteOne', blockMutation);
+auditLogSchema.pre('deleteMany', blockMutation);
+auditLogSchema.pre('findOneAndDelete', blockMutation);
+auditLogSchema.pre('remove', blockMutation);
+
 auditLogSchema.index({ action: 1, createdAt: -1 });
+auditLogSchema.index({ actorUserId: 1, createdAt: -1 });
+auditLogSchema.index({ targetId: 1, createdAt: -1 });
 
 module.exports = mongoose.models.AuditLog || mongoose.model('AuditLog', auditLogSchema);

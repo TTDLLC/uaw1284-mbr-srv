@@ -4,7 +4,7 @@ const { z } = require('zod');
 const limiters = require('../../middleware/limiters');
 const { requireAuth, requireRole } = require('../../middleware/auth');
 const { validateBody } = require('../../middleware/validation');
-const { logEvent } = require('../../services/auditTrail');
+const { logAction } = require('../../utils/audit');
 
 const router = express.Router();
 
@@ -23,19 +23,15 @@ router.post(
     try {
       const { action, notes } = req.body;
       const user = req.user || req.session?.user;
-      await logEvent({
+      await logAction({
+        actorUserId: user,
         action,
-        entityType: 'admin',
-        entityId: user?.id || 'unknown',
+        targetType: 'admin',
+        targetId: user?.id || null,
         metadata: {
           notes: notes || null
         },
-        actor: {
-          id: user?.id || null,
-          email: user?.email || null,
-          role: user?.role || null
-        },
-        ipAddress: req.ip
+        req
       });
 
       return res.json({

@@ -1,0 +1,128 @@
+<section class="page-header">
+  <h1>Audit Log</h1>
+  <p>Review sensitive actions across the portal.</p>
+</section>
+
+<section class="audit-filters">
+  <form method="get" action="/portal/staff/audit" class="form-card">
+    <div class="form-row">
+      <label for="audit-action">Action</label>
+      <select id="audit-action" name="action">
+        <option value="">All actions</option>
+        <% actionOptions.forEach((option) => { %>
+          <option value="<%= option %>" <%= action === option ? 'selected' : '' %>>
+            <%= option %>
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label for="audit-actor">Actor</label>
+      <select id="audit-actor" name="actor">
+        <option value="">All actors</option>
+        <% actors.forEach((actorOption) => { %>
+          <option value="<%= actorOption._id %>" <%= String(actor) === String(actorOption._id) ? 'selected' : '' %>>
+            <%= [actorOption.firstName, actorOption.lastName].filter(Boolean).join(' ') || actorOption.email %>
+            (<%= actorOption.email || 'no email' %>)
+          </option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label for="audit-range">Date Range</label>
+      <select id="audit-range" name="range">
+        <option value="7" <%= range === '7' ? 'selected' : '' %>>Last 7 days</option>
+        <option value="30" <%= range === '30' ? 'selected' : '' %>>Last 30 days</option>
+        <option value="90" <%= range === '90' ? 'selected' : '' %>>Last 90 days</option>
+        <option value="custom" <%= range === 'custom' ? 'selected' : '' %>>Custom range</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <label for="audit-start">Start Date</label>
+      <input
+        type="date"
+        id="audit-start"
+        name="start"
+        value="<%= start ? new Date(start).toISOString().slice(0, 10) : '' %>">
+    </div>
+
+    <div class="form-row">
+      <label for="audit-end">End Date</label>
+      <input
+        type="date"
+        id="audit-end"
+        name="end"
+        value="<%= end ? new Date(end).toISOString().slice(0, 10) : '' %>">
+    </div>
+
+    <div class="form-row">
+      <label for="audit-target">Target (CID or Member Name)</label>
+      <input
+        type="text"
+        id="audit-target"
+        name="target"
+        value="<%= target || '' %>"
+        placeholder="e.g. 1284-00123 or Jane Doe">
+    </div>
+
+    <div class="form-actions">
+      <button type="submit">Apply Filters</button>
+      <% if (queryBase) { %>
+        <a href="/portal/staff/audit">Reset</a>
+      <% } %>
+      <% if (isAdmin) { %>
+        <a href="/portal/staff/audit/export.csv<%= queryBase ? `?${queryBase}` : '' %>">Export CSV</a>
+      <% } %>
+    </div>
+
+    <% if (error) { %>
+      <p class="notice"><%= error %></p>
+    <% } %>
+  </form>
+</section>
+
+<section class="audit-table-section">
+  <p>Showing <strong><%= logs.length %></strong> of <strong><%= total %></strong> entries.</p>
+  <table class="audit-table">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>Action</th>
+        <th>Target</th>
+        <th>Actor</th>
+        <th>IP</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (logs.length === 0) { %>
+        <tr>
+          <td colspan="6">No audit entries match these filters.</td>
+        </tr>
+      <% } %>
+      <% logs.forEach((log) => { %>
+        <tr>
+          <td><%= log.createdAt ? new Date(log.createdAt).toLocaleString() : '—' %></td>
+          <td><code><%= log.action %></code></td>
+          <td><%= log.targetType %> / <%= log.targetLabel %></td>
+          <td><%= log.actorLabel %></td>
+          <td><%= log.ipAddress %></td>
+          <td><a href="/portal/staff/audit/<%= log.id %>">View</a></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+
+  <div class="pagination">
+    <% if (page > 1) { %>
+      <a href="/portal/staff/audit?<%= queryBase ? `${queryBase}&` : '' %>page=<%= page - 1 %>">Previous</a>
+    <% } %>
+    <span>Page <%= page %> of <%= totalPages %></span>
+    <% if (page < totalPages) { %>
+      <a href="/portal/staff/audit?<%= queryBase ? `${queryBase}&` : '' %>page=<%= page + 1 %>">Next</a>
+    <% } %>
+  </div>
+</section>

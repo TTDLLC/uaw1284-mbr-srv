@@ -1,0 +1,44 @@
+<section class="page-header">
+  <h1>Audit Entry</h1>
+  <p>Detailed view of a single audit record.</p>
+</section>
+
+<section class="audit-detail">
+  <div class="detail-card">
+    <dl>
+      <dt>Action</dt>
+      <dd><code><%= log.action %></code></dd>
+
+      <dt>Actor</dt>
+      <dd><%= log.actorLabel %></dd>
+
+      <dt>Timestamp</dt>
+      <dd><%= log.createdAt ? new Date(log.createdAt).toLocaleString() : '—' %></dd>
+
+      <dt>Target</dt>
+      <dd>
+        <%= log.targetType %> / <%= log.targetId %>
+        <% if (targetInfo) { %>
+          <span class="target-meta">(<%= targetInfo.name %>, CID <%= targetInfo.cid %>)</span>
+        <% } %>
+      </dd>
+
+      <dt>IP Address</dt>
+      <dd><%= log.ipAddress %></dd>
+
+      <dt>User Agent</dt>
+      <dd><%= log.userAgent %></dd>
+    </dl>
+  </div>
+
+  <div class="detail-card">
+    <h2>Masked Metadata</h2>
+    <% if (log.metadataJson) { %>
+      <pre><%= log.metadataJson %></pre>
+    <% } else { %>
+      <p>No metadata recorded.</p>
+    <% } %>
+  </div>
+
+  <p><a href="/portal/staff/audit">Back to Audit Log</a></p>
+</section>

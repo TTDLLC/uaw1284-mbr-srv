@@ -255,7 +255,7 @@ router.post('/change-requests/:id/approve', attachUser, requireAuth, requireRole
       memberId: member._id,
       before,
       after,
-      ipAddress: req.ip
+      req
     });
 
     changeRequest.status = 'approved';
@@ -270,7 +270,7 @@ router.post('/change-requests/:id/approve', attachUser, requireAuth, requireRole
       requestId: changeRequest._id,
       decision: 'approve',
       note,
-      ipAddress: req.ip
+      req
     });
 
     return res.redirect(`/portal/staff/change-requests/${changeRequest._id}`);
@@ -301,7 +301,7 @@ router.post('/change-requests/:id/reject', attachUser, requireAuth, requireRole(
       requestId: changeRequest._id,
       decision: 'reject',
       note,
-      ipAddress: req.ip
+      req
     });
 
     return res.redirect(`/portal/staff/change-requests/${changeRequest._id}`);

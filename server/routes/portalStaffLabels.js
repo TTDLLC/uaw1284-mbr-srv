@@ -5,6 +5,7 @@ const models = require('../models');
 const attachUser = require('../middleware/attachUser');
 const requireAuth = require('../middleware/requireAuth');
 const requireRole = require('../middleware/requireRole');
+const { logAction } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -57,6 +58,19 @@ router.post('/labels', attachUser, requireAuth, requireRole('staff'), async (req
       name: parsed.data.name,
       color: parsed.data.color || null,
       active: parseActive(parsed.data.active)
+    });
+
+    await logAction({
+      actorUserId: req.user || req.session?.user,
+      action: 'label.create',
+      targetType: 'label',
+      targetId: label._id,
+      metadata: {
+        name: label.name,
+        color: label.color,
+        active: label.active
+      },
+      req
     });
 
     return res.redirect(`/portal/staff/labels/${label._id}/edit`);
@@ -116,10 +130,36 @@ router.post('/labels/:id', attachUser, requireAuth, requireRole('staff'), async 
       });
     }
 
+    const before = {
+      name: label.name,
+      color: label.color || null,
+      active: label.active
+    };
+
     label.name = parsed.data.name;
     label.color = parsed.data.color || null;
     label.active = parseActive(parsed.data.active);
     await label.save();
+
+    const after = {
+      name: label.name,
+      color: label.color || null,
+      active: label.active
+    };
+
+    const action = before.active && !after.active ? 'label.archive' : 'label.edit';
+
+    await logAction({
+      actorUserId: req.user || req.session?.user,
+      action,
+      targetType: 'label',
+      targetId: label._id,
+      metadata: {
+        before,
+        after
+      },
+      req
+    });
 
     return res.redirect(`/portal/staff/labels/${label._id}/edit`);
   } catch (err) {

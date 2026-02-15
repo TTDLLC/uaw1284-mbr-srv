@@ -1,33 +1,33 @@
-const AuditLog = require('../models/auditLog');
+const { logAction } = require('../utils/audit');
 
 async function logEvent(entry) {
-  return AuditLog.create({
-    ...entry,
-    createdAt: entry.createdAt || new Date()
+  return logAction({
+    actorUserId: entry.actorUserId || entry.actor?.id || entry.actor?._id,
+    action: entry.action,
+    targetType: entry.targetType || entry.entityType,
+    targetId: entry.targetId || entry.entityId,
+    metadata: entry.metadata,
+    req: entry.req
   });
 }
 
-async function logMemberChange({ actor, memberId, action, before, after, ipAddress, notes }) {
-  return logEvent({
+async function logMemberChange({ actor, memberId, action, notes }) {
+  return logAction({
+    actorUserId: actor?.id || actor?._id,
     action,
-    entityType: 'member',
-    entityId: memberId,
-    before,
-    after,
-    metadata: { notes },
-    actor,
-    ipAddress
+    targetType: 'member',
+    targetId: memberId,
+    metadata: { notes }
   });
 }
 
-async function logDataExport({ actor, format, filter, count, ipAddress }) {
-  return logEvent({
+async function logDataExport({ actor, format, filter, count }) {
+  return logAction({
+    actorUserId: actor?.id || actor?._id,
     action: 'member.export',
-    entityType: 'member',
-    entityId: 'export',
-    metadata: { format, filter, count },
-    actor,
-    ipAddress
+    targetType: 'member',
+    targetId: null,
+    metadata: { format, filter, count }
   });
 }
 

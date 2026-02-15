@@ -8,7 +8,7 @@ const limiters = require('../../middleware/limiters');
 const { validateBody } = require('../../middleware/validation');
 const { regenerateSessionId } = require('../../middleware/session');
 const { hashPassword, verifyPassword } = require('../../services/passwords');
-const { logEvent } = require('../../services/auditTrail');
+const { logAction } = require('../../utils/audit');
 
 const router = express.Router();
 
@@ -56,37 +56,30 @@ router.post('/login', limiters.login, validateBody(loginSchema), async (req, res
     const user = await models.User.findOne({ email });
 
     if (!user) {
-      await logEvent({
-        action: 'auth.login.failed',
-        entityType: 'user',
-        entityId: email,
-        metadata: { reason: 'user_not_found' },
-        ipAddress: req.ip
-      });
       return unauthorizedResponse(res, req.id);
     }
 
     if (user.status !== 'active') {
-      await logEvent({
+      await logAction({
+        actorUserId: user._id,
         action: 'auth.login.failed',
-        entityType: 'user',
-        entityId: user.id,
-        actor: { id: user.id, email: user.email, role: user.role },
+        targetType: 'user',
+        targetId: user._id,
         metadata: { reason: 'user_inactive' },
-        ipAddress: req.ip
+        req
       });
       return unauthorizedResponse(res, req.id);
     }
 
     const passwordValid = await verifyPassword(password, user.passwordHash);
     if (!passwordValid) {
-      await logEvent({
+      await logAction({
+        actorUserId: user._id,
         action: 'auth.login.failed',
-        entityType: 'user',
-        entityId: user.id,
-        actor: { id: user.id, email: user.email, role: user.role },
+        targetType: 'user',
+        targetId: user._id,
         metadata: { reason: 'invalid_password' },
-        ipAddress: req.ip
+        req
       });
       return unauthorizedResponse(res, req.id);
     }
@@ -97,12 +90,12 @@ router.post('/login', limiters.login, validateBody(loginSchema), async (req, res
 
     await models.User.updateOne({ _id: user._id }, { $set: { lastLoginAt: new Date() } });
 
-    await logEvent({
+    await logAction({
+      actorUserId: user._id,
       action: 'auth.login.success',
-      entityType: 'user',
-      entityId: user.id,
-      actor: { id: user.id, email: user.email, role: user.role },
-      ipAddress: req.ip
+      targetType: 'user',
+      targetId: user._id,
+      req
     });
 
     return res.json({
@@ -130,12 +123,12 @@ router.post('/logout', (req, res, next) => {
     }
     res.clearCookie('uaw1284.sid');
     if (actor) {
-      await logEvent({
+      await logAction({
+        actorUserId: actor,
         action: 'auth.logout',
-        entityType: 'user',
-        entityId: actor.id,
-        actor,
-        ipAddress: req.ip
+        targetType: 'user',
+        targetId: actor.id,
+        req
       });
     }
     return res.json({ ok: true, requestId: req.id });
@@ -170,12 +163,12 @@ router.post(
         devToken = token;
       }
 
-      await logEvent({
+      await logAction({
+        actorUserId: user._id,
         action: 'auth.password_reset.requested',
-        entityType: 'user',
-        entityId: user.id,
-        actor: { id: user.id, email: user.email, role: user.role },
-        ipAddress: req.ip
+        targetType: 'user',
+        targetId: user._id,
+        req
       });
     }
 
@@ -243,12 +236,12 @@ router.post(
         { $set: { usedAt: now } }
       );
 
-      await logEvent({
+      await logAction({
+        actorUserId: user._id,
         action: 'auth.password_reset.completed',
-        entityType: 'user',
-        entityId: user.id,
-        actor: { id: user.id, email: user.email, role: user.role },
-        ipAddress: req.ip
+        targetType: 'user',
+        targetId: user._id,
+        req
       });
 
       return res.json({

@@ -4,6 +4,7 @@ const models = require('../models');
 const attachUser = require('../middleware/attachUser');
 const requireAuth = require('../middleware/requireAuth');
 const requireRole = require('../middleware/requireRole');
+const { logAction } = require('../utils/audit');
 
 const router = express.Router();
 
@@ -96,6 +97,18 @@ router.post('/email-requests/:id/approve', attachUser, requireAuth, requireRole(
       }
     }
 
+    await logAction({
+      actorUserId: reviewer,
+      action: 'emailRequest.approve',
+      targetType: 'emailChangeRequest',
+      targetId: request._id,
+      metadata: {
+        requestedEmail: request.requestedEmail,
+        memberId: request.memberId ? String(request.memberId) : null
+      },
+      req
+    });
+
     return res.redirect('/portal/staff/email-requests');
   } catch (err) {
     return next(err);
@@ -114,6 +127,18 @@ router.post('/email-requests/:id/reject', attachUser, requireAuth, requireRole('
     request.reviewedByUserId = reviewer?._id || reviewer?.id || null;
     request.reviewedAt = new Date();
     await request.save();
+
+    await logAction({
+      actorUserId: reviewer,
+      action: 'emailRequest.reject',
+      targetType: 'emailChangeRequest',
+      targetId: request._id,
+      metadata: {
+        requestedEmail: request.requestedEmail,
+        memberId: request.memberId ? String(request.memberId) : null
+      },
+      req
+    });
 
     return res.redirect('/portal/staff/email-requests');
   } catch (err) {

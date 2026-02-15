@@ -5,7 +5,7 @@ const limiters = require('../../middleware/limiters');
 const { requireAuth, requireRole } = require('../../middleware/auth');
 const { validateBody } = require('../../middleware/validation');
 const Member = require('../../models/member');
-const { logMemberChange, logDataExport } = require('../../services/auditTrail');
+const { logAction } = require('../../utils/audit');
 
 const router = express.Router();
 
@@ -46,11 +46,7 @@ function parseMemberPayload(payload) {
 }
 
 function actorFromRequest(req) {
-  const user = req.user || req.session?.user;
-  if (!user) {
-    return null;
-  }
-  return { id: user.id, email: user.email, role: user.role };
+  return req.user || req.session?.user || null;
 }
 
 router.post(
@@ -63,14 +59,15 @@ router.post(
     try {
       const payload = parseMemberPayload(req.body);
       const member = await Member.create(payload);
-      await logMemberChange({
-        actor: actorFromRequest(req),
-        memberId: member.id,
+      await logAction({
+        actorUserId: actorFromRequest(req),
         action: 'member.create',
-        before: null,
-        after: member.toObject(),
-        ipAddress: req.ip,
-        notes: 'Member created via API'
+        targetType: 'member',
+        targetId: member._id,
+        metadata: {
+          notes: 'Member created via API'
+        },
+        req
       });
       return res.status(201).json({ ok: true, member, requestId: req.id });
     } catch (err) {
@@ -95,14 +92,16 @@ router.put(
       const updates = parseMemberPayload(req.body);
       Object.assign(member, updates);
       await member.save();
-      await logMemberChange({
-        actor: actorFromRequest(req),
-        memberId: member.id,
+      await logAction({
+        actorUserId: actorFromRequest(req),
         action: 'member.update',
-        before,
-        after: member.toObject(),
-        ipAddress: req.ip,
-        notes: 'Member updated via API'
+        targetType: 'member',
+        targetId: member._id,
+        metadata: {
+          notes: 'Member updated via API',
+          changedFields: Object.keys(updates || {})
+        },
+        req
       });
       return res.json({ ok: true, member, requestId: req.id });
     } catch (err) {
@@ -122,16 +121,16 @@ router.delete(
       if (!member) {
         return res.status(404).json({ ok: false, message: 'Member not found', requestId: req.id });
       }
-      const before = member.toObject();
       await Member.deleteOne({ _id: member.id });
-      await logMemberChange({
-        actor: actorFromRequest(req),
-        memberId: member.id,
+      await logAction({
+        actorUserId: actorFromRequest(req),
         action: 'member.delete',
-        before,
-        after: null,
-        ipAddress: req.ip,
-        notes: 'Member deleted via API'
+        targetType: 'member',
+        targetId: member._id,
+        metadata: {
+          notes: 'Member deleted via API'
+        },
+        req
       });
       return res.json({ ok: true, requestId: req.id });
     } catch (err) {
@@ -152,12 +151,17 @@ router.get(
         filter.status = req.query.status;
       }
       const members = await Member.find(filter).limit(100).lean();
-      await logDataExport({
-        actor: actorFromRequest(req),
-        format: 'json',
-        filter,
-        count: members.length,
-        ipAddress: req.ip
+      await logAction({
+        actorUserId: actorFromRequest(req),
+        action: 'member.export',
+        targetType: 'member',
+        targetId: null,
+        metadata: {
+          format: 'json',
+          filter,
+          count: members.length
+        },
+        req
       });
       return res.json({ ok: true, count: members.length, members, requestId: req.id });
     } catch (err) {
